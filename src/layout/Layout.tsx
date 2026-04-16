@@ -195,9 +195,11 @@ export default function Layout(): JSX.Element {
                                         primary={item.label}
                                         slotProps={{
                                             primary: {
-                                                fontWeight: isActive ? 600 : 500,
-                                                color: isActive ? '#1e293b' : '#64748b',
-                                                fontSize: '0.9rem',
+                                                sx: {
+                                                    fontWeight: isActive ? 600 : 500,
+                                                    color: isActive ? '#1e293b' : '#64748b',
+                                                    fontSize: '0.9rem',
+                                                }
                                             }
                                         }}
                                     />
@@ -262,10 +264,14 @@ export default function Layout(): JSX.Element {
                             </ListItemIcon>
                             <ListItemText
                                 primary="系统管理"
-                                primaryTypographyProps={{
-                                    fontWeight: isSystemMenuActive ? 600 : 500,
-                                    color: isSystemMenuActive ? '#1e293b' : '#64748b',
-                                    fontSize: '0.9rem',
+                                slotProps={{
+                                    primary: {
+                                        sx: {
+                                            fontWeight: isSystemMenuActive ? 600 : 500,
+                                            color: isSystemMenuActive ? '#1e293b' : '#64748b',
+                                            fontSize: '0.9rem',
+                                        }
+                                    }
                                 }}
                             />
                             {systemMenuOpen || isSystemMenuActive ? (
@@ -309,14 +315,18 @@ export default function Layout(): JSX.Element {
                                             >
                                                 {item.icon}
                                             </ListItemIcon>
-                                            <ListItemText
-                                                primary={item.label}
-                                                primaryTypographyProps={{
-                                                    fontWeight: isActive ? 600 : 500,
-                                                    color: isActive ? '#1e293b' : '#64748b',
-                                                    fontSize: '0.85rem',
-                                                }}
-                                            />
+                                        <ListItemText
+                                            primary={item.label}
+                                            slotProps={{
+                                                primary: {
+                                                    sx: {
+                                                        fontWeight: isActive ? 600 : 500,
+                                                        color: isActive ? '#1e293b' : '#64748b',
+                                                        fontSize: '0.85rem',
+                                                    }
+                                                }
+                                            }}
+                                        />
                                         </ListItemButton>
                                     )
                                 })}
@@ -355,18 +365,18 @@ export default function Layout(): JSX.Element {
                             A
                         </Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                                variant="body2"
-                                fontWeight={600}
-                                sx={{
-                                    color: '#1e293b',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                管理员
-                            </Typography>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                fontWeight: 600,
+                                color: '#1e293b',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            管理员
+                        </Typography>
                             <Typography
                                 variant="caption"
                                 sx={{

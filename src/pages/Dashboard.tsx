@@ -222,7 +222,7 @@ export default function Dashboard(): JSX.Element {
                                                     background: item.color,
                                                 }}
                                             />
-                                            <Typography variant="body2" fontWeight={600}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                 {item.value}
                                             </Typography>
                                         </Box>
@@ -269,7 +269,7 @@ export default function Dashboard(): JSX.Element {
                                         }}
                                     >
                                         <Box>
-                                            <Typography variant="body2" fontWeight={600}>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                 {item.label}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">

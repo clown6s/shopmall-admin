@@ -305,7 +305,7 @@ export default function Users(): JSX.Element {
                                                         {getInitials(user.name)}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight={600}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                             {user.name}
                                                         </Typography>
                                                         <Typography variant="caption" color="text.secondary">
@@ -398,15 +398,17 @@ export default function Users(): JSX.Element {
                 onClose={() => setOpenCreate(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         新建用户
                     </Typography>
                 </DialogTitle>
@@ -519,14 +521,16 @@ export default function Users(): JSX.Element {
             <Dialog
                 open={Boolean(deleteTarget)}
                 onClose={() => setDeleteTarget(null)}
-                PaperProps={{
-                    sx: {
-                        borderRadius: '20px',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '20px',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         确认删除
                     </Typography>
                 </DialogTitle>

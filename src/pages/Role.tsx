@@ -185,7 +185,7 @@ export default function Role(): JSX.Element {
         return items.map((item) => (
             <TreeItem
                 key={item.id}
-                nodeId={String(item.id)}
+                itemId={String(item.id)}
                 label={
                     <Box sx={{ display: 'flex', alignItems: 'center', py: 0.5 }}>
                         <Checkbox
@@ -324,7 +324,7 @@ export default function Role(): JSX.Element {
                                                         {getInitials(role.name)}
                                                     </Avatar>
                                                     <Box>
-                                                        <Typography variant="body2" fontWeight={600}>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                             {role.name}
                                                         </Typography>
                                                         <Typography variant="caption" color="text.secondary">
@@ -434,15 +434,17 @@ export default function Role(): JSX.Element {
                 onClose={() => setOpenCreate(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         新建角色
                     </Typography>
                 </DialogTitle>
@@ -524,15 +526,17 @@ export default function Role(): JSX.Element {
                 onClose={() => setOpenEdit(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         编辑角色
                     </Typography>
                 </DialogTitle>
@@ -613,15 +617,17 @@ export default function Role(): JSX.Element {
                 onClose={() => setOpenPermissions(false)}
                 maxWidth="md"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         分配权限 - {currentRole?.name}
                     </Typography>
                 </DialogTitle>
@@ -641,8 +647,10 @@ export default function Role(): JSX.Element {
                             }}
                         >
                             <SimpleTreeView
-                                defaultCollapseIcon={<ExpandMoreIcon />}
-                                defaultExpandIcon={<ChevronRightIcon />}
+                                slots={{
+                                    collapseIcon: ExpandMoreIcon,
+                                    expandIcon: ChevronRightIcon,
+                                }}
                             >
                                 {renderPermissionTree(permissions)}
                             </SimpleTreeView>
@@ -675,12 +683,14 @@ export default function Role(): JSX.Element {
             <Dialog
                 open={Boolean(deleteTarget)}
                 onClose={() => setDeleteTarget(null)}
-                PaperProps={{
-                    sx: { borderRadius: '20px' },
+                slotProps={{
+                    paper: {
+                        sx: { borderRadius: '20px' },
+                    },
                 }}
             >
                 <DialogTitle sx={{ pb: 1 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         确认删除
                     </Typography>
                 </DialogTitle>

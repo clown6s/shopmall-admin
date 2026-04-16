@@ -1,5 +1,5 @@
 // src/router/index.tsx
-import { createBrowserRouter } from 'react-router-dom'
+import { createMemoryRouter } from 'react-router-dom'
 import Layout from '../layout/Layout'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
@@ -10,7 +10,7 @@ import Menu from '../pages/Menu'
 import Permission from '../pages/Permission'
 import RequireAuth from './RequireAuth'
 
-const router = createBrowserRouter([
+const router = createMemoryRouter([
     {
         path: '/login',
         element: <Login />,

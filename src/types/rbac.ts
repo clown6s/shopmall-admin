@@ -14,6 +14,7 @@ export interface IPermission {
     status: number // 0-禁用 1-启用
     createTime: string
     updateTime: string
+    children?: IPermission[]
 }
 
 // 角色

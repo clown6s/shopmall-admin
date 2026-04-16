@@ -432,15 +432,17 @@ export default function Menu(): JSX.Element {
                 onClose={() => setOpenCreate(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         新建菜单
                     </Typography>
                 </DialogTitle>
@@ -473,15 +475,17 @@ export default function Menu(): JSX.Element {
                 onClose={() => setOpenEdit(false)}
                 maxWidth="sm"
                 fullWidth
-                PaperProps={{
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                slotProps={{
+                    paper: {
+                        sx: {
+                            borderRadius: '24px',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                        },
                     },
                 }}
             >
                 <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         编辑菜单
                     </Typography>
                 </DialogTitle>
@@ -512,12 +516,14 @@ export default function Menu(): JSX.Element {
             <Dialog
                 open={Boolean(deleteTarget)}
                 onClose={() => setDeleteTarget(null)}
-                PaperProps={{
-                    sx: { borderRadius: '20px' },
+                slotProps={{
+                    paper: {
+                        sx: { borderRadius: '20px' },
+                    },
                 }}
             >
                 <DialogTitle sx={{ pb: 1 }}>
-                    <Typography variant="h6" fontWeight={700}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         确认删除
                     </Typography>
                 </DialogTitle>
