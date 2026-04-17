@@ -66,7 +66,8 @@ export default function Login(): JSX.Element {
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 position: 'relative',
-                overflow: 'hidden',
+                overflowY: 'auto',
+                py: 4,
                 '&::before': {
                     content: '""',
                     position: 'absolute',

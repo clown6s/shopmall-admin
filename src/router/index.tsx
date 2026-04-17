@@ -4,6 +4,7 @@ import Layout from '../layout/Layout'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
 import Product from '../pages/Product'
+import ProductCategory from '../pages/ProductCategory'
 import Users from '../pages/Users'
 import Role from '../pages/Role'
 import Menu from '../pages/Menu'
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Dashboard /> },
                     { path: 'product', element: <Product /> },
+                    { path: 'product/category', element: <ProductCategory /> },
                     { path: 'users', element: <Users /> },
                     { path: 'system/role', element: <Role /> },
                     { path: 'system/menu', element: <Menu /> },

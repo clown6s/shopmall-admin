@@ -23,6 +23,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import SecurityIcon from '@mui/icons-material/Security'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'
+import CategoryIcon from '@mui/icons-material/Category'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -35,7 +36,11 @@ const DRAWER_WIDTH = 260
 const navItems = [
     { label: '仪表盘', path: '/', icon: <DashboardIcon />, color: '#667eea' },
     { label: '用户管理', path: '/users', icon: <PeopleIcon />, color: '#f093fb' },
-    { label: '商品管理', path: '/product', icon: <StorefrontIcon />, color: '#4facfe' },
+]
+
+const productMenuItems = [
+    { label: '商品列表', path: '/product', icon: <StorefrontIcon />, color: '#4facfe' },
+    { label: '商品分类', path: '/product/category', icon: <CategoryIcon />, color: '#00f2fe' },
 ]
 
 const systemMenuItems = [
@@ -49,6 +54,7 @@ export default function Layout(): JSX.Element {
     const navigate = useNavigate()
     const location = useLocation()
     const [systemMenuOpen, setSystemMenuOpen] = useState(false)
+    const [productMenuOpen, setProductMenuOpen] = useState(false)
 
     const handleLogout = () => {
         logout()
@@ -57,6 +63,10 @@ export default function Layout(): JSX.Element {
 
     const isSystemMenuActive = systemMenuItems.some((item) =>
         location.pathname.startsWith(item.path)
+    )
+
+    const isProductMenuActive = productMenuItems.some((item) =>
+        location.pathname === item.path || location.pathname.startsWith(item.path + '/')
     )
 
     return (
@@ -133,9 +143,11 @@ export default function Layout(): JSX.Element {
                         width: DRAWER_WIDTH,
                         boxSizing: 'border-box',
                         mt: '64px',
+                        height: 'calc(100vh - 64px)',
                         background: '#fff',
                         borderRight: '1px solid #e2e8f0',
                         boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
+                        overflowY: 'auto',
                     },
                 }}
             >
@@ -216,6 +228,91 @@ export default function Layout(): JSX.Element {
                                 </ListItemButton>
                             )
                         })}
+                    </List>
+
+                    {/* Product Management */}
+                    <List sx={{ px: 2 }}>
+                        <ListItemButton
+                            onClick={() => setProductMenuOpen(!productMenuOpen)}
+                            selected={isProductMenuActive}
+                            sx={{
+                                borderRadius: '12px',
+                                mb: 0.5,
+                                py: 1.2,
+                                px: 2,
+                                transition: 'all 0.2s ease',
+                                '&.Mui-selected': {
+                                    background: 'linear-gradient(135deg, #4facfe15 0%, #00f2fe08 100%)',
+                                },
+                                '&:hover': { background: '#f8fafc' },
+                            }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 40, color: isProductMenuActive ? '#4facfe' : '#64748b' }}>
+                                <StorefrontIcon />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="商品管理"
+                                slotProps={{
+                                    primary: {
+                                        sx: {
+                                            fontWeight: isProductMenuActive ? 600 : 500,
+                                            color: isProductMenuActive ? '#1e293b' : '#64748b',
+                                            fontSize: '0.9rem',
+                                        }
+                                    }
+                                }}
+                            />
+                            {productMenuOpen || isProductMenuActive ? (
+                                <ExpandLess sx={{ color: '#64748b', fontSize: 20 }} />
+                            ) : (
+                                <ExpandMore sx={{ color: '#64748b', fontSize: 20 }} />
+                            )}
+                        </ListItemButton>
+                        <Collapse in={productMenuOpen || isProductMenuActive} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                {productMenuItems.map((item) => {
+                                    const isActive = location.pathname === item.path
+                                    return (
+                                        <ListItemButton
+                                            key={item.path}
+                                            component={Link}
+                                            to={item.path}
+                                            selected={isActive}
+                                            sx={{
+                                                pl: 6,
+                                                py: 1,
+                                                borderRadius: '10px',
+                                                mb: 0.5,
+                                                transition: 'all 0.2s ease',
+                                                '&.Mui-selected': {
+                                                    background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)`,
+                                                    '&:hover': {
+                                                        background: `linear-gradient(135deg, ${item.color}18 0%, ${item.color}0c 100%)`,
+                                                    },
+                                                },
+                                                '&:hover': { background: '#f8fafc' },
+                                            }}
+                                        >
+                                            <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
+                                                {item.icon}
+                                            </ListItemIcon>
+                                            <ListItemText
+                                                primary={item.label}
+                                                slotProps={{
+                                                    primary: {
+                                                        sx: {
+                                                            fontWeight: isActive ? 600 : 500,
+                                                            color: isActive ? '#1e293b' : '#64748b',
+                                                            fontSize: '0.85rem',
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                        </ListItemButton>
+                                    )
+                                })}
+                            </List>
+                        </Collapse>
                     </List>
 
                     <Divider sx={{ my: 2, mx: 3, borderColor: '#e2e8f0' }} />
@@ -401,7 +498,8 @@ export default function Layout(): JSX.Element {
                     flexGrow: 1,
                     p: 4,
                     mt: '64px',
-                    minHeight: 'calc(100vh - 64px)',
+                    height: 'calc(100vh - 64px)',
+                    overflowY: 'auto',
                     background: '#f8fafc',
                 }}
             >
