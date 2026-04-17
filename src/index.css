@@ -117,7 +117,7 @@
 
 html, body {
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden !important;
 }
 
 body {
@@ -127,7 +127,8 @@ body {
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden !important;
   display: flex;
   flex-direction: column;
 }

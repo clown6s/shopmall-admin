@@ -70,7 +70,7 @@ export default function Layout(): JSX.Element {
     )
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden', width: '100vw' }}>
             {/* AppBar */}
             <AppBar
                 position="fixed"
@@ -147,7 +147,7 @@ export default function Layout(): JSX.Element {
                         background: '#fff',
                         borderRight: '1px solid #e2e8f0',
                         boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
-                        overflowY: 'auto',
+                        overflow: 'hidden',
                     },
                 }}
             >
