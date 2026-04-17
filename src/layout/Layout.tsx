@@ -496,10 +496,10 @@ export default function Layout(): JSX.Element {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    p: 4,
+                    p: 3,
                     mt: '64px',
                     height: 'calc(100vh - 64px)',
-                    overflowY: 'auto',
+                    overflow: 'hidden',
                     background: '#f8fafc',
                 }}
             >
