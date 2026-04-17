@@ -1,5 +1,12 @@
 import type {TreeViewDefaultItemModelProperties} from '@mui/x-tree-view/models';
 
+// 商品类型
+export interface IProduct {
+    id: number
+    name: string
+    price: number
+}
+
 // 旧数据（保留作为参考）
 export const EMPLOYEES_DATASET: TreeViewDefaultItemModelProperties[] = [
     {
