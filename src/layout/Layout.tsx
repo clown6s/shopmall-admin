@@ -15,6 +15,7 @@ import {
     Avatar,
     Tooltip,
     Divider,
+    IconButton,
 } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import PeopleIcon from '@mui/icons-material/People'
@@ -27,11 +28,14 @@ import CategoryIcon from '@mui/icons-material/Category'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import LogoutIcon from '@mui/icons-material/Logout'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import MenuIcon from '@mui/icons-material/Menu'
 import useUserStore from '../store/useUserStore'
 import type { JSX } from 'react'
 import { useState } from 'react'
 
 const DRAWER_WIDTH = 260
+const DRAWER_COLLAPSED_WIDTH = 72
 
 const navItems = [
     { label: '仪表盘', path: '/', icon: <DashboardIcon />, color: '#667eea' },
@@ -55,6 +59,9 @@ export default function Layout(): JSX.Element {
     const location = useLocation()
     const [systemMenuOpen, setSystemMenuOpen] = useState(false)
     const [productMenuOpen, setProductMenuOpen] = useState(false)
+    const [collapsed, setCollapsed] = useState(false)
+
+    const drawerWidth = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH
 
     const handleLogout = () => {
         logout()
@@ -109,7 +116,21 @@ export default function Layout(): JSX.Element {
                             ShopMall Admin
                         </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {/* 折叠按钮 */}
+                        <Tooltip title={collapsed ? '展开侧栏' : '收起侧栏'}>
+                            <IconButton
+                                onClick={() => setCollapsed(!collapsed)}
+                                size="small"
+                                sx={{
+                                    color: '#64748b',
+                                    borderRadius: '10px',
+                                    '&:hover': { background: '#f1f5f9' },
+                                }}
+                            >
+                                {collapsed ? <MenuIcon /> : <MenuOpenIcon />}
+                            </IconButton>
+                        </Tooltip>
                         <Tooltip title="退出登录">
                             <Button
                                 color="inherit"
@@ -137,10 +158,11 @@ export default function Layout(): JSX.Element {
             <Drawer
                 variant="permanent"
                 sx={{
-                    width: DRAWER_WIDTH,
+                    width: drawerWidth,
                     flexShrink: 0,
+                    transition: 'width 0.25s ease',
                     '& .MuiDrawer-paper': {
-                        width: DRAWER_WIDTH,
+                        width: drawerWidth,
                         boxSizing: 'border-box',
                         mt: '64px',
                         height: 'calc(100vh - 64px)',
@@ -148,154 +170,62 @@ export default function Layout(): JSX.Element {
                         borderRight: '1px solid #e2e8f0',
                         boxShadow: '4px 0 24px rgba(0,0,0,0.02)',
                         overflow: 'hidden',
+                        transition: 'width 0.25s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
                     },
                 }}
             >
-                <Box sx={{ py: 2 }}>
+                {/* 滚动区域 */}
+                <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 2 }}>
                     {/* Main Navigation */}
-                    <List sx={{ px: 2 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                px: 2,
-                                py: 1,
-                                display: 'block',
-                                color: '#94a3b8',
-                                fontWeight: 600,
-                                fontSize: '0.7rem',
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase',
-                            }}
-                        >
-                            主菜单
-                        </Typography>
+                    <List sx={{ px: collapsed ? 1 : 2 }}>
+                        {!collapsed && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    px: 2, py: 1, display: 'block',
+                                    color: '#94a3b8', fontWeight: 600,
+                                    fontSize: '0.7rem', letterSpacing: '0.05em',
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                主菜单
+                            </Typography>
+                        )}
                         {navItems.map((item) => {
                             const isActive = location.pathname === item.path
                             return (
-                                <ListItemButton
-                                    key={item.path}
-                                    component={Link}
-                                    to={item.path}
-                                    selected={isActive}
-                                    sx={{
-                                        borderRadius: '12px',
-                                        mb: 0.5,
-                                        py: 1.2,
-                                        px: 2,
-                                        transition: 'all 0.2s ease',
-                                        '&.Mui-selected': {
-                                            background: `linear-gradient(135deg, ${item.color}15 0%, ${item.color}08 100%)`,
-                                            '&:hover': {
-                                                background: `linear-gradient(135deg, ${item.color}20 0%, ${item.color}10 100%)`,
-                                            },
-                                        },
-                                        '&:hover': {
-                                            background: '#f8fafc',
-                                        },
-                                    }}
-                                >
-                                    <ListItemIcon
+                                <Tooltip key={item.path} title={collapsed ? item.label : ''} placement="right">
+                                    <ListItemButton
+                                        component={Link}
+                                        to={item.path}
+                                        selected={isActive}
                                         sx={{
-                                            minWidth: 40,
-                                            color: isActive ? item.color : '#64748b',
-                                            transition: 'color 0.2s ease',
+                                            borderRadius: '12px',
+                                            mb: 0.5,
+                                            py: 1.2,
+                                            px: collapsed ? 1.5 : 2,
+                                            justifyContent: collapsed ? 'center' : 'flex-start',
+                                            transition: 'all 0.2s ease',
+                                            '&.Mui-selected': {
+                                                background: `linear-gradient(135deg, ${item.color}15 0%, ${item.color}08 100%)`,
+                                                '&:hover': { background: `linear-gradient(135deg, ${item.color}20 0%, ${item.color}10 100%)` },
+                                            },
+                                            '&:hover': { background: '#f8fafc' },
                                         }}
                                     >
-                                        {item.icon}
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        primary={item.label}
-                                        slotProps={{
-                                            primary: {
-                                                sx: {
-                                                    fontWeight: isActive ? 600 : 500,
-                                                    color: isActive ? '#1e293b' : '#64748b',
-                                                    fontSize: '0.9rem',
-                                                }
-                                            }
-                                        }}
-                                    />
-                                    {isActive && (
-                                        <Box
+                                        <ListItemIcon
                                             sx={{
-                                                width: 4,
-                                                height: 4,
-                                                borderRadius: '50%',
-                                                background: item.color,
-                                            }}
-                                        />
-                                    )}
-                                </ListItemButton>
-                            )
-                        })}
-                    </List>
-
-                    {/* Product Management */}
-                    <List sx={{ px: 2 }}>
-                        <ListItemButton
-                            onClick={() => setProductMenuOpen(!productMenuOpen)}
-                            selected={isProductMenuActive}
-                            sx={{
-                                borderRadius: '12px',
-                                mb: 0.5,
-                                py: 1.2,
-                                px: 2,
-                                transition: 'all 0.2s ease',
-                                '&.Mui-selected': {
-                                    background: 'linear-gradient(135deg, #4facfe15 0%, #00f2fe08 100%)',
-                                },
-                                '&:hover': { background: '#f8fafc' },
-                            }}
-                        >
-                            <ListItemIcon sx={{ minWidth: 40, color: isProductMenuActive ? '#4facfe' : '#64748b' }}>
-                                <StorefrontIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary="商品管理"
-                                slotProps={{
-                                    primary: {
-                                        sx: {
-                                            fontWeight: isProductMenuActive ? 600 : 500,
-                                            color: isProductMenuActive ? '#1e293b' : '#64748b',
-                                            fontSize: '0.9rem',
-                                        }
-                                    }
-                                }}
-                            />
-                            {productMenuOpen || isProductMenuActive ? (
-                                <ExpandLess sx={{ color: '#64748b', fontSize: 20 }} />
-                            ) : (
-                                <ExpandMore sx={{ color: '#64748b', fontSize: 20 }} />
-                            )}
-                        </ListItemButton>
-                        <Collapse in={productMenuOpen || isProductMenuActive} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                {productMenuItems.map((item) => {
-                                    const isActive = location.pathname === item.path
-                                    return (
-                                        <ListItemButton
-                                            key={item.path}
-                                            component={Link}
-                                            to={item.path}
-                                            selected={isActive}
-                                            sx={{
-                                                pl: 6,
-                                                py: 1,
-                                                borderRadius: '10px',
-                                                mb: 0.5,
-                                                transition: 'all 0.2s ease',
-                                                '&.Mui-selected': {
-                                                    background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)`,
-                                                    '&:hover': {
-                                                        background: `linear-gradient(135deg, ${item.color}18 0%, ${item.color}0c 100%)`,
-                                                    },
-                                                },
-                                                '&:hover': { background: '#f8fafc' },
+                                                minWidth: collapsed ? 'unset' : 40,
+                                                color: isActive ? item.color : '#64748b',
+                                                transition: 'color 0.2s ease',
+                                                justifyContent: 'center',
                                             }}
                                         >
-                                            <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
-                                                {item.icon}
-                                            </ListItemIcon>
+                                            {item.icon}
+                                        </ListItemIcon>
+                                        {!collapsed && (
                                             <ListItemText
                                                 primary={item.label}
                                                 slotProps={{
@@ -303,192 +233,298 @@ export default function Layout(): JSX.Element {
                                                         sx: {
                                                             fontWeight: isActive ? 600 : 500,
                                                             color: isActive ? '#1e293b' : '#64748b',
-                                                            fontSize: '0.85rem',
+                                                            fontSize: '0.9rem',
                                                         }
                                                     }
                                                 }}
                                             />
-                                        </ListItemButton>
-                                    )
-                                })}
-                            </List>
-                        </Collapse>
+                                        )}
+                                        {!collapsed && isActive && (
+                                            <Box sx={{ width: 4, height: 4, borderRadius: '50%', background: item.color }} />
+                                        )}
+                                    </ListItemButton>
+                                </Tooltip>
+                            )
+                        })}
                     </List>
 
-                    <Divider sx={{ my: 2, mx: 3, borderColor: '#e2e8f0' }} />
-
-                    {/* System Management */}
-                    <List sx={{ px: 2 }}>
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                px: 2,
-                                py: 1,
-                                display: 'block',
-                                color: '#94a3b8',
-                                fontWeight: 600,
-                                fontSize: '0.7rem',
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase',
-                            }}
-                        >
-                            系统管理
-                        </Typography>
-                        <ListItemButton
-                            onClick={() => setSystemMenuOpen(!systemMenuOpen)}
-                            selected={isSystemMenuActive}
-                            sx={{
-                                borderRadius: '12px',
-                                mb: 0.5,
-                                py: 1.2,
-                                px: 2,
-                                transition: 'all 0.2s ease',
-                                '&.Mui-selected': {
-                                    background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-                                },
-                                '&:hover': {
-                                    background: '#f8fafc',
-                                },
-                            }}
-                        >
-                            <ListItemIcon
+                    {/* Product Management */}
+                    <List sx={{ px: collapsed ? 1 : 2 }}>
+                        <Tooltip title={collapsed ? '商品管理' : ''} placement="right">
+                            <ListItemButton
+                                onClick={() => !collapsed && setProductMenuOpen(!productMenuOpen)}
+                                selected={isProductMenuActive}
                                 sx={{
-                                    minWidth: 40,
-                                    color: isSystemMenuActive ? '#667eea' : '#64748b',
+                                    borderRadius: '12px',
+                                    mb: 0.5,
+                                    py: 1.2,
+                                    px: collapsed ? 1.5 : 2,
+                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                    transition: 'all 0.2s ease',
+                                    '&.Mui-selected': { background: 'linear-gradient(135deg, #4facfe15 0%, #00f2fe08 100%)' },
+                                    '&:hover': { background: '#f8fafc' },
                                 }}
                             >
-                                <SettingsIcon />
-                            </ListItemIcon>
-                            <ListItemText
-                                primary="系统管理"
-                                slotProps={{
-                                    primary: {
-                                        sx: {
-                                            fontWeight: isSystemMenuActive ? 600 : 500,
-                                            color: isSystemMenuActive ? '#1e293b' : '#64748b',
-                                            fontSize: '0.9rem',
-                                        }
-                                    }
-                                }}
-                            />
-                            {systemMenuOpen || isSystemMenuActive ? (
-                                <ExpandLess sx={{ color: '#64748b', fontSize: 20 }} />
-                            ) : (
-                                <ExpandMore sx={{ color: '#64748b', fontSize: 20 }} />
-                            )}
-                        </ListItemButton>
-                        <Collapse in={systemMenuOpen || isSystemMenuActive} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                {systemMenuItems.map((item) => {
-                                    const isActive = location.pathname === item.path
-                                    return (
-                                        <ListItemButton
-                                            key={item.path}
-                                            component={Link}
-                                            to={item.path}
-                                            selected={isActive}
-                                            sx={{
-                                                pl: 6,
-                                                py: 1,
-                                                borderRadius: '10px',
-                                                mb: 0.5,
-                                                transition: 'all 0.2s ease',
-                                                '&.Mui-selected': {
-                                                    background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)`,
-                                                    '&:hover': {
-                                                        background: `linear-gradient(135deg, ${item.color}18 0%, ${item.color}0c 100%)`,
-                                                    },
-                                                },
-                                                '&:hover': {
-                                                    background: '#f8fafc',
-                                                },
-                                            }}
-                                        >
-                                            <ListItemIcon
-                                                sx={{
-                                                    minWidth: 32,
-                                                    color: isActive ? item.color : '#94a3b8',
-                                                }}
-                                            >
-                                                {item.icon}
-                                            </ListItemIcon>
+                                <ListItemIcon sx={{ minWidth: collapsed ? 'unset' : 40, color: isProductMenuActive ? '#4facfe' : '#64748b', justifyContent: 'center' }}>
+                                    <StorefrontIcon />
+                                </ListItemIcon>
+                                {!collapsed && (
+                                    <>
                                         <ListItemText
-                                            primary={item.label}
+                                            primary="商品管理"
                                             slotProps={{
                                                 primary: {
                                                     sx: {
-                                                        fontWeight: isActive ? 600 : 500,
-                                                        color: isActive ? '#1e293b' : '#64748b',
-                                                        fontSize: '0.85rem',
+                                                        fontWeight: isProductMenuActive ? 600 : 500,
+                                                        color: isProductMenuActive ? '#1e293b' : '#64748b',
+                                                        fontSize: '0.9rem',
                                                     }
                                                 }
                                             }}
                                         />
-                                        </ListItemButton>
+                                        {productMenuOpen || isProductMenuActive
+                                            ? <ExpandLess sx={{ color: '#64748b', fontSize: 20 }} />
+                                            : <ExpandMore sx={{ color: '#64748b', fontSize: 20 }} />
+                                        }
+                                    </>
+                                )}
+                            </ListItemButton>
+                        </Tooltip>
+                        {!collapsed && (
+                            <Collapse in={productMenuOpen || isProductMenuActive} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding>
+                                    {productMenuItems.map((item) => {
+                                        const isActive = location.pathname === item.path
+                                        return (
+                                            <ListItemButton
+                                                key={item.path}
+                                                component={Link}
+                                                to={item.path}
+                                                selected={isActive}
+                                                sx={{
+                                                    pl: 6, py: 1,
+                                                    borderRadius: '10px', mb: 0.5,
+                                                    transition: 'all 0.2s ease',
+                                                    '&.Mui-selected': {
+                                                        background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)`,
+                                                        '&:hover': { background: `linear-gradient(135deg, ${item.color}18 0%, ${item.color}0c 100%)` },
+                                                    },
+                                                    '&:hover': { background: '#f8fafc' },
+                                                }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
+                                                    {item.icon}
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={item.label}
+                                                    slotProps={{
+                                                        primary: {
+                                                            sx: {
+                                                                fontWeight: isActive ? 600 : 500,
+                                                                color: isActive ? '#1e293b' : '#64748b',
+                                                                fontSize: '0.85rem',
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                            </ListItemButton>
+                                        )
+                                    })}
+                                </List>
+                            </Collapse>
+                        )}
+                        {/* 折叠时展示子项图标 */}
+                        {collapsed && (
+                            <List component="div" disablePadding>
+                                {productMenuItems.map((item) => {
+                                    const isActive = location.pathname === item.path
+                                    return (
+                                        <Tooltip key={item.path} title={item.label} placement="right">
+                                            <ListItemButton
+                                                component={Link}
+                                                to={item.path}
+                                                selected={isActive}
+                                                sx={{
+                                                    borderRadius: '10px', mb: 0.5, py: 1,
+                                                    justifyContent: 'center',
+                                                    '&.Mui-selected': { background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)` },
+                                                    '&:hover': { background: '#f8fafc' },
+                                                }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 'unset', color: isActive ? item.color : '#94a3b8', justifyContent: 'center' }}>
+                                                    {item.icon}
+                                                </ListItemIcon>
+                                            </ListItemButton>
+                                        </Tooltip>
                                     )
                                 })}
                             </List>
-                        </Collapse>
+                        )}
+                    </List>
+
+                    <Divider sx={{ my: 2, mx: collapsed ? 1 : 3, borderColor: '#e2e8f0' }} />
+
+                    {/* System Management */}
+                    <List sx={{ px: collapsed ? 1 : 2 }}>
+                        {!collapsed && (
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    px: 2, py: 1, display: 'block',
+                                    color: '#94a3b8', fontWeight: 600,
+                                    fontSize: '0.7rem', letterSpacing: '0.05em',
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                系统管理
+                            </Typography>
+                        )}
+                        <Tooltip title={collapsed ? '系统管理' : ''} placement="right">
+                            <ListItemButton
+                                onClick={() => !collapsed && setSystemMenuOpen(!systemMenuOpen)}
+                                selected={isSystemMenuActive}
+                                sx={{
+                                    borderRadius: '12px',
+                                    mb: 0.5, py: 1.2,
+                                    px: collapsed ? 1.5 : 2,
+                                    justifyContent: collapsed ? 'center' : 'flex-start',
+                                    transition: 'all 0.2s ease',
+                                    '&.Mui-selected': { background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)' },
+                                    '&:hover': { background: '#f8fafc' },
+                                }}
+                            >
+                                <ListItemIcon sx={{ minWidth: collapsed ? 'unset' : 40, color: isSystemMenuActive ? '#667eea' : '#64748b', justifyContent: 'center' }}>
+                                    <SettingsIcon />
+                                </ListItemIcon>
+                                {!collapsed && (
+                                    <>
+                                        <ListItemText
+                                            primary="系统管理"
+                                            slotProps={{
+                                                primary: {
+                                                    sx: {
+                                                        fontWeight: isSystemMenuActive ? 600 : 500,
+                                                        color: isSystemMenuActive ? '#1e293b' : '#64748b',
+                                                        fontSize: '0.9rem',
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        {systemMenuOpen || isSystemMenuActive
+                                            ? <ExpandLess sx={{ color: '#64748b', fontSize: 20 }} />
+                                            : <ExpandMore sx={{ color: '#64748b', fontSize: 20 }} />
+                                        }
+                                    </>
+                                )}
+                            </ListItemButton>
+                        </Tooltip>
+                        {!collapsed && (
+                            <Collapse in={systemMenuOpen || isSystemMenuActive} timeout="auto" unmountOnExit>
+                                <List component="div" disablePadding>
+                                    {systemMenuItems.map((item) => {
+                                        const isActive = location.pathname === item.path
+                                        return (
+                                            <ListItemButton
+                                                key={item.path}
+                                                component={Link}
+                                                to={item.path}
+                                                selected={isActive}
+                                                sx={{
+                                                    pl: 6, py: 1,
+                                                    borderRadius: '10px', mb: 0.5,
+                                                    transition: 'all 0.2s ease',
+                                                    '&.Mui-selected': {
+                                                        background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)`,
+                                                        '&:hover': { background: `linear-gradient(135deg, ${item.color}18 0%, ${item.color}0c 100%)` },
+                                                    },
+                                                    '&:hover': { background: '#f8fafc' },
+                                                }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
+                                                    {item.icon}
+                                                </ListItemIcon>
+                                                <ListItemText
+                                                    primary={item.label}
+                                                    slotProps={{
+                                                        primary: {
+                                                            sx: {
+                                                                fontWeight: isActive ? 600 : 500,
+                                                                color: isActive ? '#1e293b' : '#64748b',
+                                                                fontSize: '0.85rem',
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                            </ListItemButton>
+                                        )
+                                    })}
+                                </List>
+                            </Collapse>
+                        )}
+                        {/* 折叠时展示子项图标 */}
+                        {collapsed && (
+                            <List component="div" disablePadding>
+                                {systemMenuItems.map((item) => {
+                                    const isActive = location.pathname === item.path
+                                    return (
+                                        <Tooltip key={item.path} title={item.label} placement="right">
+                                            <ListItemButton
+                                                component={Link}
+                                                to={item.path}
+                                                selected={isActive}
+                                                sx={{
+                                                    borderRadius: '10px', mb: 0.5, py: 1,
+                                                    justifyContent: 'center',
+                                                    '&.Mui-selected': { background: `linear-gradient(135deg, ${item.color}12 0%, ${item.color}06 100%)` },
+                                                    '&:hover': { background: '#f8fafc' },
+                                                }}
+                                            >
+                                                <ListItemIcon sx={{ minWidth: 'unset', color: isActive ? item.color : '#94a3b8', justifyContent: 'center' }}>
+                                                    {item.icon}
+                                                </ListItemIcon>
+                                            </ListItemButton>
+                                        </Tooltip>
+                                    )
+                                })}
+                            </List>
+                        )}
                     </List>
                 </Box>
 
                 {/* Sidebar Footer */}
-                <Box
-                    sx={{
-                        mt: 'auto',
-                        p: 3,
-                        borderTop: '1px solid #e2e8f0',
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            p: 2,
-                            borderRadius: '14px',
-                            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                            border: '1px solid #e2e8f0',
-                        }}
-                    >
-                        <Avatar
+                {!collapsed && (
+                    <Box sx={{ p: 3, borderTop: '1px solid #e2e8f0' }}>
+                        <Box
                             sx={{
-                                width: 40,
-                                height: 40,
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: 2, p: 2,
+                                borderRadius: '14px',
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                                border: '1px solid #e2e8f0',
                             }}
                         >
-                            A
-                        </Avatar>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                            variant="body2"
-                            sx={{
-                                fontWeight: 600,
-                                color: '#1e293b',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            管理员
-                        </Typography>
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    color: '#64748b',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    display: 'block',
-                                }}
-                            >
-                                admin@shopmall.com
-                            </Typography>
+                            <Avatar sx={{ width: 40, height: 40, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600 }}>
+                                A
+                            </Avatar>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    管理员
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+                                    admin@shopmall.com
+                                </Typography>
+                            </Box>
                         </Box>
                     </Box>
-                </Box>
+                )}
+                {collapsed && (
+                    <Box sx={{ p: 1.5, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center' }}>
+                        <Tooltip title="管理员" placement="right">
+                            <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600, cursor: 'default' }}>
+                                A
+                            </Avatar>
+                        </Tooltip>
+                    </Box>
+                )}
             </Drawer>
 
             {/* Main Content */}
@@ -501,6 +537,7 @@ export default function Layout(): JSX.Element {
                     height: 'calc(100vh - 64px)',
                     overflow: 'hidden',
                     background: '#f8fafc',
+                    transition: 'margin-left 0.25s ease',
                 }}
             >
                 <Outlet />

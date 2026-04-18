@@ -7,6 +7,17 @@ export interface IProduct {
     price: number
 }
 
+// 品牌
+export interface Brand {
+    brandId: number
+    name: string
+    logo: string
+    descript: string
+    showStatus: number
+    firstLetter: string
+    sort: number
+}
+
 // 旧数据（保留作为参考）
 export const EMPLOYEES_DATASET: TreeViewDefaultItemModelProperties[] = [
     {
