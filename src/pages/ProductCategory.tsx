@@ -16,7 +16,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems } from "../types/product.ts";
-import {getProductCategoryTreeApi} from "../api/product.ts";
+import {getProductCategoryTreeApi, deleteCategoryApi} from "../api/product.ts";
 
 
 
@@ -112,13 +112,19 @@ export default function ProductCategory() {
     };
 
     // 确认删除
-    const handleConfirmDelete = () => {
-        if (deletingId) {
-            console.log('确认删除分类:', deletingId);
-            // TODO: 调用删除 API
+    const handleConfirmDelete = async () => {
+        if (!deletingId) return;
+        try {
+            await deleteCategoryApi(Number(deletingId));
+            // 删除成功后刷新列表
+            const res = await getProductCategoryTreeApi();
+            setItems(toTreeViewItems(res.data.data || []));
+        } catch (err) {
+            console.error('删除分类失败:', err);
+        } finally {
+            setDeleteDialogOpen(false);
+            setDeletingId(null);
         }
-        setDeleteDialogOpen(false);
-        setDeletingId(null);
     };
 
     // 取消删除
