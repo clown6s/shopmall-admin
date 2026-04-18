@@ -21,3 +21,18 @@ export const addCategoryApi = (data: CategoryParams) =>
 // 修改分类
 export const updateCategoryApi = (catId: number, data: Omit<CategoryParams, 'catLevel'>) =>
     request.put<ApiResponse<void>>(`/product/category/${catId}`, data)
+
+// 添加品牌参数
+export interface AddBrandParams {
+    name: string
+    logo: string
+    descript: string
+    showStatus: number
+    firstLetter: string
+    sort: number
+    catId: number        // 关联的三级分类ID
+}
+
+// 添加品牌
+export const addBrandApi = (data: AddBrandParams) =>
+    request.post<ApiResponse<void>>('/product/brand', data)

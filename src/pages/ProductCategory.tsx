@@ -36,7 +36,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems, type CategoryTreeItem, type Brand } from "../types/product.ts";
-import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi} from "../api/product.ts";
+import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi, addBrandApi} from "../api/product.ts";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
 interface FlattenCategory {
@@ -195,6 +195,17 @@ export default function ProductCategory() {
     const [brands, setBrands] = React.useState<Brand[]>([]);
     const [brandsLoading, setBrandsLoading] = React.useState(false);
 
+    // 添加品牌弹窗状态
+    const [addBrandDialogOpen, setAddBrandDialogOpen] = React.useState(false);
+    const [newBrand, setNewBrand] = React.useState({
+        name: '',
+        logo: '',
+        descript: '',
+        showStatus: true,
+        firstLetter: '',
+        sort: 0,
+    });
+
     // 显示提示
     const showSnackbar = (message: string, severity: 'success' | 'error') => {
         setSnackbar({ open: true, message, severity });
@@ -343,6 +354,56 @@ export default function ProductCategory() {
     const handleDelete = (id: string) => {
         setDeletingId(id);
         setDeleteDialogOpen(true);
+    };
+
+    // 打开添加品牌弹窗
+    const handleOpenAddBrandDialog = () => {
+        setNewBrand({
+            name: '',
+            logo: '',
+            descript: '',
+            showStatus: true,
+            firstLetter: '',
+            sort: 0,
+        });
+        setAddBrandDialogOpen(true);
+    };
+
+    // 关闭添加品牌弹窗
+    const handleCloseAddBrandDialog = () => {
+        setAddBrandDialogOpen(false);
+    };
+
+    // 确认添加品牌
+    const handleConfirmAddBrand = async () => {
+        if (!newBrand.name.trim()) {
+            showSnackbar('品牌名称不能为空', 'error');
+            return;
+        }
+        if (!selectedCategoryId) {
+            showSnackbar('请先选择一个三级分类', 'error');
+            return;
+        }
+        try {
+            await addBrandApi({
+                name: newBrand.name,
+                logo: newBrand.logo,
+                descript: newBrand.descript,
+                showStatus: newBrand.showStatus ? 1 : 0,
+                firstLetter: newBrand.firstLetter,
+                sort: newBrand.sort,
+                catId: selectedCategoryId,
+            });
+            // 刷新品牌列表
+            if (selectedCategoryId) {
+                loadBrands(selectedCategoryId);
+            }
+            showSnackbar('添加成功', 'success');
+            handleCloseAddBrandDialog();
+        } catch (err) {
+            console.error('添加品牌失败:', err);
+            showSnackbar('添加失败', 'error');
+        }
     };
 
     // 确认删除
@@ -653,6 +714,141 @@ export default function ProductCategory() {
                 </DialogActions>
             </Dialog>
 
+            {/* 添加品牌对话框 */}
+            <Dialog open={addBrandDialogOpen} onClose={handleCloseAddBrandDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ pb: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <BusinessIcon color="primary" />
+                        添加品牌
+                        {selectedCategoryName && (
+                            <Chip 
+                                label={`关联分类: ${selectedCategoryName}`}
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                                sx={{ ml: 1 }}
+                            />
+                        )}
+                    </Box>
+                </DialogTitle>
+                <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                    {/* 品牌预览卡片 */}
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar 
+                            src={newBrand.logo} 
+                            variant="rounded"
+                            sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: '1.5rem' }}
+                        >
+                            {newBrand.name ? newBrand.name.charAt(0).toUpperCase() : <BusinessIcon />}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" color="text.secondary">
+                                {newBrand.name || '品牌名称'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {newBrand.descript || '暂无描述'}
+                            </Typography>
+                        </Box>
+                        {newBrand.firstLetter && (
+                            <Chip label={newBrand.firstLetter} size="small" variant="outlined" />
+                        )}
+                    </Paper>
+
+                    <TextField
+                        autoFocus
+                        label="品牌名称"
+                        value={newBrand.name}
+                        onChange={(e) => setNewBrand({ ...newBrand, name: e.target.value })}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleConfirmAddBrand();
+                            }
+                        }}
+                        fullWidth
+                        required
+                        placeholder="请输入品牌名称"
+                        error={!newBrand.name.trim()}
+                        helperText={!newBrand.name.trim() ? '品牌名称不能为空' : ''}
+                    />
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                            label="首字母"
+                            value={newBrand.firstLetter}
+                            onChange={(e) => setNewBrand({ ...newBrand, firstLetter: e.target.value.toUpperCase() })}
+                            placeholder="如: A"
+                            sx={{ flex: 1 }}
+                            size="small"
+                            slotProps={{ input: { inputProps: { maxLength: 1 } } }}
+                        />
+
+                        <TextField
+                            label="排序"
+                            type="number"
+                            value={newBrand.sort}
+                            onChange={(e) => setNewBrand({ ...newBrand, sort: Number(e.target.value) })}
+                            sx={{ flex: 1 }}
+                            size="small"
+                            slotProps={{ input: { inputProps: { min: 0 } } }}
+                        />
+                    </Box>
+
+                    <TextField
+                        label="品牌Logo"
+                        value={newBrand.logo}
+                        onChange={(e) => setNewBrand({ ...newBrand, logo: e.target.value })}
+                        size="small"
+                        placeholder="输入Logo URL"
+                        slotProps={{
+                            input: {
+                                startAdornment: newBrand.logo ? (
+                                    <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                                        <img src={newBrand.logo} alt="logo" height={24} style={{ borderRadius: 4 }} />
+                                    </Box>
+                                ) : null
+                            }
+                        }}
+                    />
+
+                    <TextField
+                        label="品牌描述"
+                        value={newBrand.descript}
+                        onChange={(e) => setNewBrand({ ...newBrand, descript: e.target.value })}
+                        size="small"
+                        placeholder="输入品牌描述"
+                        multiline
+                        rows={2}
+                    />
+
+                    <Paper variant="outlined" sx={{ p: 1.5 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={newBrand.showStatus}
+                                    onChange={(e) => setNewBrand({ ...newBrand, showStatus: e.target.checked })}
+                                    color="success"
+                                />
+                            }
+                            label={
+                                <Typography variant="body2">
+                                    {newBrand.showStatus ? (
+                                        <><CheckCircleIcon color="success" fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />显示该品牌</>
+                                    ) : (
+                                        <><CancelIcon color="error" fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />隐藏该品牌</>
+                                    )}
+                                </Typography>
+                            }
+                        />
+                    </Paper>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={handleCloseAddBrandDialog}>取消</Button>
+                    <Button onClick={handleConfirmAddBrand} variant="contained" color="primary" startIcon={<AddIcon />}>
+                        添加
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* 提示消息 */}
             <Snackbar
                 open={snackbar.open}
@@ -735,6 +931,14 @@ export default function ProductCategory() {
                                 />
                             )}
                         </Typography>
+                        <Button 
+                            size="small" 
+                            variant="contained" 
+                            startIcon={<AddIcon />}
+                            onClick={handleOpenAddBrandDialog}
+                        >
+                            添加品牌
+                        </Button>
                     </Box>
 
                     {/* 品牌表格 */}
