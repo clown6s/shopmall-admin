@@ -2,15 +2,19 @@ import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
+import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems } from "../types/product.ts";
 import {getProductCategoryTreeApi} from "../api/product.ts";
 
 
 
-const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
+const CustomTreeItemRoot = styled(TreeItem)(({ theme }) => ({
     color: theme.palette.grey[200],
     [`& .${treeItemClasses.content}`]: {
         borderRadius: theme.spacing(0.5),
@@ -23,10 +27,8 @@ const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
     },
     [`& .${treeItemClasses.iconContainer}`]: {
         borderRadius: '50%',
-        // backgroundColor: theme.palette.primary.dark,
         padding: theme.spacing(0, 1.2),
         ...theme.applyStyles('light', {
-            // backgroundColor: alpha(theme.palette.primary.main, 0.25),
         }),
         ...theme.applyStyles('dark', {
             color: theme.palette.primary.contrastText,
@@ -42,6 +44,45 @@ const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
     }),
 }));
 
+interface CustomTreeItemProps {
+    onEdit: (id: string) => void;
+    onDelete: (id: string) => void;
+}
+
+const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<typeof CustomTreeItemRoot> & CustomTreeItemProps>(
+    ({ label, onEdit, onDelete, ...props }, ref) => {
+        const handleEdit = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            onEdit(props.itemId);
+        };
+
+        const handleDelete = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            onDelete(props.itemId);
+        };
+
+        return (
+            <CustomTreeItemRoot
+                ref={ref}
+                {...props}
+                label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', '& .action-buttons': { opacity: 0 }, '&:hover .action-buttons': { opacity: 1 } }}>
+                        <span style={{ flex: 1 }}>{label}</span>
+                        <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
+                            <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
+                                <EditIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                            <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
+                                <DeleteIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                        </Box>
+                    </Box>
+                }
+            />
+        );
+    }
+);
+
 
 
 export default function ProductCategory() {
@@ -49,6 +90,18 @@ export default function ProductCategory() {
     const [items, setItems] = React.useState<ReturnType<typeof toTreeViewItems>>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+
+    // 编辑分类
+    const handleEdit = (id: string) => {
+        console.log('编辑分类:', id);
+        // TODO: 打开编辑弹窗
+    };
+
+    // 删除分类
+    const handleDelete = (id: string) => {
+        console.log('删除分类:', id);
+        // TODO: 确认删除逻辑
+    };
 
     // 加载分类数据
     React.useEffect(() => {
@@ -88,8 +141,14 @@ export default function ProductCategory() {
         <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 50px)', overflow: 'auto' }}>
             <RichTreeView
                 defaultExpandedItems={['grid']}
-                slots={{ item: CustomTreeItem }}
                 items={items}
+                slots={{ item: (props: TreeItemProps) => (
+                    <CustomTreeItem
+                        {...props}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                    />
+                )}}
             />
         </Box>
     );
