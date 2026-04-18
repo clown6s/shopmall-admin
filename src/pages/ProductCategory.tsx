@@ -159,7 +159,7 @@ export default function ProductCategory() {
     const [error, setError] = React.useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [deletingId, setDeletingId] = React.useState<string | null>(null);
-    const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'warning' }>({
         open: false,
         message: '',
         severity: 'success',
@@ -207,7 +207,7 @@ export default function ProductCategory() {
     });
 
     // 显示提示
-    const showSnackbar = (message: string, severity: 'success' | 'error') => {
+    const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning') => {
         setSnackbar({ open: true, message, severity });
     };
 
@@ -358,6 +358,10 @@ export default function ProductCategory() {
 
     // 打开添加品牌弹窗
     const handleOpenAddBrandDialog = () => {
+        if (!selectedCategoryId) {
+            showSnackbar('请先选择一个三级分类', 'warning');
+            return;
+        }
         setNewBrand({
             name: '',
             logo: '',
@@ -936,6 +940,7 @@ export default function ProductCategory() {
                             variant="contained" 
                             startIcon={<AddIcon />}
                             onClick={handleOpenAddBrandDialog}
+                            disabled={!selectedCategoryId}
                         >
                             添加品牌
                         </Button>
