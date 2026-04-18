@@ -9,10 +9,15 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Tooltip from '@mui/material/Tooltip';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
@@ -20,7 +25,25 @@ import * as React from "react";
 import { toTreeViewItems } from "../types/product.ts";
 import {getProductCategoryTreeApi, deleteCategoryApi} from "../api/product.ts";
 
-
+// 扁平化树形数据，用于下拉选择（带缩进显示层级）
+interface FlattenCategory {
+    id: string;
+    name: string;
+    level: number;
+}
+const flattenCategories = (
+    items: ReturnType<typeof toTreeViewItems>,
+    level = 0
+): FlattenCategory[] => {
+    let result: FlattenCategory[] = [];
+    for (const item of items) {
+        result.push({ id: item.id, name: item.label as string, level });
+        if (item.children && item.children.length > 0) {
+            result = result.concat(flattenCategories(item.children, level + 1));
+        }
+    }
+    return result;
+};
 
 const CustomTreeItemRoot = styled(TreeItem)(({ theme }) => ({
     color: theme.palette.grey[200],
@@ -55,10 +78,11 @@ const CustomTreeItemRoot = styled(TreeItem)(({ theme }) => ({
 interface CustomTreeItemProps {
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
+    onAddChild: (id: string) => void;
 }
 
 const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<typeof CustomTreeItemRoot> & CustomTreeItemProps>(
-    ({ label, onEdit, onDelete, ...props }, ref) => {
+    ({ label, onEdit, onDelete, onAddChild, ...props }, ref) => {
         const handleEdit = (e: React.MouseEvent) => {
             e.stopPropagation();
             onEdit(props.itemId);
@@ -69,6 +93,11 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
             onDelete(props.itemId);
         };
 
+        const handleAddChild = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            onAddChild(props.itemId);
+        };
+
         return (
             <CustomTreeItemRoot
                 ref={ref}
@@ -77,12 +106,21 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', '& .action-buttons': { opacity: 0 }, '&:hover .action-buttons': { opacity: 1 } }}>
                         <span style={{ flex: 1 }}>{label}</span>
                         <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
-                            <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
-                                <EditIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                            <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
-                                <DeleteIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
+                            <Tooltip title="添加子分类">
+                                <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
+                                    <AddIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="编辑">
+                                <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
+                                    <EditIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="删除">
+                                <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
+                                    <DeleteIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                            </Tooltip>
                         </Box>
                     </Box>
                 }
@@ -105,6 +143,17 @@ export default function ProductCategory() {
         message: '',
         severity: 'success',
     });
+    const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+    const [flatCategories, setFlatCategories] = React.useState<FlattenCategory[]>([]);
+    const [newCategory, setNewCategory] = React.useState({
+        name: '',
+        parentCid: 0,
+        catLevel: 1,
+        showStatus: true,
+        sort: 0,
+        icon: '',
+        productUnit: '',
+    });
 
     // 显示提示
     const showSnackbar = (message: string, severity: 'success' | 'error') => {
@@ -114,6 +163,59 @@ export default function ProductCategory() {
     // 关闭提示
     const handleSnackbarClose = () => {
         setSnackbar((prev) => ({ ...prev, open: false }));
+    };
+
+    // 打开添加分类弹窗（可选父分类ID）
+    const handleOpenAddDialog = (parentId?: string) => {
+        setFlatCategories(flattenCategories(items));
+        
+        if (parentId) {
+            // 有父分类，自动计算层级
+            const parent = flatCategories.find(c => c.id === parentId);
+            const parentLevel = parent ? parent.level + 2 : 2;
+            setNewCategory({
+                name: '',
+                parentCid: Number(parentId),
+                catLevel: Math.min(parentLevel, 3),
+                showStatus: true,
+                sort: 0,
+                icon: '',
+                productUnit: '',
+            });
+        } else {
+            // 无父分类，顶级分类
+            setNewCategory({
+                name: '',
+                parentCid: 0,
+                catLevel: 1,
+                showStatus: true,
+                sort: 0,
+                icon: '',
+                productUnit: '',
+            });
+        }
+        setAddDialogOpen(true);
+    };
+
+    // 添加子分类（从节点触发）
+    const handleAddChild = (parentId: string) => {
+        handleOpenAddDialog(parentId);
+    };
+
+    // 关闭添加分类弹窗
+    const handleCloseAddDialog = () => {
+        setAddDialogOpen(false);
+    };
+
+    // 确认添加分类
+    const handleConfirmAdd = async () => {
+        if (!newCategory.name.trim()) {
+            showSnackbar('请输入分类名称', 'error');
+            return;
+        }
+        // TODO: 调用添加分类 API
+        console.log('添加分类:', newCategory);
+        handleCloseAddDialog();
     };
 
     // 编辑分类
@@ -188,6 +290,86 @@ export default function ProductCategory() {
                 </DialogActions>
             </Dialog>
 
+            {/* 添加分类对话框 */}
+            <Dialog open={addDialogOpen} onClose={handleCloseAddDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ pb: 1 }}>添加分类</DialogTitle>
+                <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+                    {/* 父分类（只读显示） */}
+                    <Box sx={{ 
+                        p: 2, 
+                        bgcolor: 'grey.50', 
+                        borderRadius: 1,
+                        border: '1px solid',
+                        borderColor: 'grey.200'
+                    }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                            父级分类
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {newCategory.parentCid === 0 
+                                ? '顶级分类（无父级）' 
+                                : (flatCategories.find(c => c.id === String(newCategory.parentCid))?.name || '未知分类')}
+                        </Typography>
+                    </Box>
+
+                    <TextField
+                        autoFocus
+                        label="分类名称"
+                        value={newCategory.name}
+                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleConfirmAdd();
+                            }
+                        }}
+                        fullWidth
+                    />
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                            label="排序"
+                            type="number"
+                            value={newCategory.sort}
+                            onChange={(e) => setNewCategory({ ...newCategory, sort: Number(e.target.value) })}
+                            sx={{ flex: 1 }}
+                            size="small"
+                        />
+
+                        <TextField
+                            label="计量单位"
+                            value={newCategory.productUnit}
+                            onChange={(e) => setNewCategory({ ...newCategory, productUnit: e.target.value })}
+                            placeholder="件、个、箱"
+                            sx={{ flex: 1 }}
+                            size="small"
+                        />
+                    </Box>
+
+                    <TextField
+                        label="图标地址"
+                        value={newCategory.icon}
+                        onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
+                        size="small"
+                    />
+
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={newCategory.showStatus}
+                                onChange={(e) => setNewCategory({ ...newCategory, showStatus: e.target.checked })}
+                            />
+                        }
+                        label="是否显示"
+                    />
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={handleCloseAddDialog}>取消</Button>
+                    <Button onClick={handleConfirmAdd} variant="contained">
+                        添加
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* 提示消息 */}
             <Snackbar
                 open={snackbar.open}
@@ -205,6 +387,11 @@ export default function ProductCategory() {
                 </Alert>
             </Snackbar>
 
+            {/* 标题栏 */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="h6">商品分类</Typography>
+            </Box>
+
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
                     <CircularProgress />
@@ -214,7 +401,7 @@ export default function ProductCategory() {
                     <Typography color="error">{error}</Typography>
                 </Box>
             ) : (
-                <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 50px)', overflow: 'auto' }}>
+                <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 70px)', overflow: 'auto' }}>
                     <RichTreeView
                         defaultExpandedItems={['grid']}
                         items={items}
@@ -223,6 +410,7 @@ export default function ProductCategory() {
                                 {...props}
                                 onEdit={handleEdit}
                                 onDelete={handleDelete}
+                                onAddChild={handleAddChild}
                             />
                         )}}
                     />
