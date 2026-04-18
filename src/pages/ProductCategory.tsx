@@ -36,7 +36,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems, type CategoryTreeItem, type Brand } from "../types/product.ts";
-import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi, addBrandApi} from "../api/product.ts";
+import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi, addBrandApi, updateBrandApi, deleteBrandApi} from "../api/product.ts";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
 interface FlattenCategory {
@@ -166,7 +166,7 @@ export default function ProductCategory() {
     });
     const [addDialogOpen, setAddDialogOpen] = React.useState(false);
     const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-    const [editingId, setEditingId] = React.useState<number | null>(null);
+    const [editingId, setEditingId] = React.useState<string | null>(null);
     const [editCategory, setEditCategory] = React.useState({
         name: '',
         parentCid: 0,
@@ -190,7 +190,7 @@ export default function ProductCategory() {
     });
 
     // 当前选中的分类ID（用于加载品牌）
-    const [selectedCategoryId, setSelectedCategoryId] = React.useState<number | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null);
     const [selectedCategoryName, setSelectedCategoryName] = React.useState<string>('');
     const [brands, setBrands] = React.useState<Brand[]>([]);
     const [brandsLoading, setBrandsLoading] = React.useState(false);
@@ -205,6 +205,22 @@ export default function ProductCategory() {
         firstLetter: '',
         sort: 0,
     });
+
+    // 编辑品牌弹窗状态
+    const [editBrandDialogOpen, setEditBrandDialogOpen] = React.useState(false);
+    const [editingBrand, setEditingBrand] = React.useState<Brand | null>(null);
+    const [editBrand, setEditBrand] = React.useState({
+        name: '',
+        logo: '',
+        descript: '',
+        showStatus: true,
+        firstLetter: '',
+        sort: 0,
+    });
+
+    // 删除品牌弹窗状态
+    const [deleteBrandDialogOpen, setDeleteBrandDialogOpen] = React.useState(false);
+    const [deletingBrand, setDeletingBrand] = React.useState<Brand | null>(null);
 
     // 显示提示
     const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning') => {
@@ -336,7 +352,7 @@ export default function ProductCategory() {
         
         const category = findCategoryById(items, id);
         if (category) {
-            setEditingId(Number(id));
+            setEditingId(id);
             setEditCategory({
                 name: category.label as string,
                 parentCid: cat.parentCid, // 保留原有父级
@@ -410,16 +426,93 @@ export default function ProductCategory() {
         }
     };
 
+    // 打开编辑品牌弹窗
+    const handleOpenEditBrandDialog = (brand: Brand) => {
+        setEditingBrand(brand);
+        setEditBrand({
+            name: brand.name,
+            logo: brand.logo,
+            descript: brand.descript,
+            showStatus: brand.showStatus === 1,
+            firstLetter: brand.firstLetter,
+            sort: brand.sort,
+        });
+        setEditBrandDialogOpen(true);
+    };
+
+    // 关闭编辑品牌弹窗
+    const handleCloseEditBrandDialog = () => {
+        setEditBrandDialogOpen(false);
+        setEditingBrand(null);
+    };
+
+    // 确认编辑品牌
+    const handleConfirmEditBrand = async () => {
+        if (!editBrand.name.trim()) {
+            showSnackbar('品牌名称不能为空', 'error');
+            return;
+        }
+        if (!editingBrand) return;
+        try {
+            await updateBrandApi(editingBrand.brandId, {
+                name: editBrand.name,
+                logo: editBrand.logo,
+                descript: editBrand.descript,
+                showStatus: editBrand.showStatus ? 1 : 0,
+                firstLetter: editBrand.firstLetter,
+                sort: editBrand.sort,
+            });
+            // 刷新品牌列表
+            if (selectedCategoryId) {
+                loadBrands(selectedCategoryId);
+            }
+            showSnackbar('更新成功', 'success');
+            handleCloseEditBrandDialog();
+        } catch (err) {
+            console.error('更新品牌失败:', err);
+            showSnackbar('更新失败', 'error');
+        }
+    };
+
+    // 打开删除品牌确认框
+    const handleOpenDeleteBrandDialog = (brand: Brand) => {
+        setDeletingBrand(brand);
+        setDeleteBrandDialogOpen(true);
+    };
+
+    // 关闭删除品牌确认框
+    const handleCloseDeleteBrandDialog = () => {
+        setDeleteBrandDialogOpen(false);
+        setDeletingBrand(null);
+    };
+
+    // 确认删除品牌
+    const handleConfirmDeleteBrand = async () => {
+        if (!deletingBrand) return;
+        try {
+            await deleteBrandApi(deletingBrand.brandId);
+            // 刷新品牌列表
+            if (selectedCategoryId) {
+                loadBrands(selectedCategoryId);
+            }
+            showSnackbar('删除成功', 'success');
+            handleCloseDeleteBrandDialog();
+        } catch (err) {
+            console.error('删除品牌失败:', err);
+            showSnackbar('删除失败', 'error');
+        }
+    };
+
     // 确认删除
     const handleConfirmDelete = async () => {
         if (!deletingId) return;
         try {
-            await deleteCategoryApi(Number(deletingId));
+            await deleteCategoryApi(deletingId);
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data.data || []));
             showSnackbar('删除成功', 'success');
             // 如果删除的是当前选中的分类，清空品牌列表
-            if (Number(deletingId) === selectedCategoryId) {
+            if (String(deletingId) === selectedCategoryId) {
                 setSelectedCategoryId(null);
                 setSelectedCategoryName('');
                 setBrands([]);
@@ -443,9 +536,9 @@ export default function ProductCategory() {
     const handleSelectCategory = (cat: FlattenCategory) => {
         // 只有三级分类才加载品牌
         if (cat.catLevel === 3) {
-            setSelectedCategoryId(Number(cat.id));
+            setSelectedCategoryId(cat.id);
             setSelectedCategoryName(cat.name);
-            loadBrands(Number(cat.id));
+            loadBrands(cat.id);
         } else {
             // 非三级分类，清空品牌列表
             setSelectedCategoryId(null);
@@ -455,7 +548,7 @@ export default function ProductCategory() {
     };
 
     // 加载品牌列表
-    const loadBrands = async (catId: number) => {
+    const loadBrands = async (catId: string) => {
         if (catId === null) return;
         setBrandsLoading(true);
         try {
@@ -853,6 +946,155 @@ export default function ProductCategory() {
                 </DialogActions>
             </Dialog>
 
+            {/* 编辑品牌对话框 */}
+            <Dialog open={editBrandDialogOpen} onClose={handleCloseEditBrandDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ pb: 0.5 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EditIcon color="primary" />
+                        编辑品牌
+                        {editingBrand && (
+                            <Chip
+                                label={`ID: ${editingBrand.brandId}`}
+                                size="small"
+                                variant="outlined"
+                                sx={{ ml: 1 }}
+                            />
+                        )}
+                    </Box>
+                </DialogTitle>
+                <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                    {/* 品牌预览卡片 */}
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Avatar
+                            src={editBrand.logo}
+                            variant="rounded"
+                            sx={{ width: 56, height: 56, bgcolor: 'primary.main', fontSize: '1.5rem' }}
+                        >
+                            {editBrand.name ? editBrand.name.charAt(0).toUpperCase() : <BusinessIcon />}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="subtitle2" color="text.secondary">
+                                {editBrand.name || '品牌名称'}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {editBrand.descript || '暂无描述'}
+                            </Typography>
+                        </Box>
+                        {editBrand.firstLetter && (
+                            <Chip label={editBrand.firstLetter} size="small" variant="outlined" />
+                        )}
+                    </Paper>
+
+                    <TextField
+                        autoFocus
+                        label="品牌名称"
+                        value={editBrand.name}
+                        onChange={(e) => setEditBrand({ ...editBrand, name: e.target.value })}
+                        fullWidth
+                        required
+                        placeholder="请输入品牌名称"
+                        error={!editBrand.name.trim()}
+                        helperText={!editBrand.name.trim() ? '品牌名称不能为空' : ''}
+                    />
+
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                            label="首字母"
+                            value={editBrand.firstLetter}
+                            onChange={(e) => setEditBrand({ ...editBrand, firstLetter: e.target.value.toUpperCase() })}
+                            placeholder="如: A"
+                            sx={{ flex: 1 }}
+                            size="small"
+                            slotProps={{ input: { inputProps: { maxLength: 1 } } }}
+                        />
+                        <TextField
+                            label="排序"
+                            type="number"
+                            value={editBrand.sort}
+                            onChange={(e) => setEditBrand({ ...editBrand, sort: Number(e.target.value) })}
+                            sx={{ flex: 1 }}
+                            size="small"
+                            slotProps={{ input: { inputProps: { min: 0 } } }}
+                        />
+                    </Box>
+
+                    <TextField
+                        label="品牌Logo"
+                        value={editBrand.logo}
+                        onChange={(e) => setEditBrand({ ...editBrand, logo: e.target.value })}
+                        size="small"
+                        placeholder="输入Logo URL"
+                        slotProps={{
+                            input: {
+                                startAdornment: editBrand.logo ? (
+                                    <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                                        <img src={editBrand.logo} alt="logo" height={24} style={{ borderRadius: 4 }} />
+                                    </Box>
+                                ) : null
+                            }
+                        }}
+                    />
+
+                    <TextField
+                        label="品牌描述"
+                        value={editBrand.descript}
+                        onChange={(e) => setEditBrand({ ...editBrand, descript: e.target.value })}
+                        size="small"
+                        placeholder="输入品牌描述"
+                        multiline
+                        rows={2}
+                    />
+
+                    <Paper variant="outlined" sx={{ p: 1.5 }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={editBrand.showStatus}
+                                    onChange={(e) => setEditBrand({ ...editBrand, showStatus: e.target.checked })}
+                                    color="success"
+                                />
+                            }
+                            label={
+                                <Typography variant="body2">
+                                    {editBrand.showStatus ? (
+                                        <><CheckCircleIcon color="success" fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />显示该品牌</>
+                                    ) : (
+                                        <><CancelIcon color="error" fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />隐藏该品牌</>
+                                    )}
+                                </Typography>
+                            }
+                        />
+                    </Paper>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button onClick={handleCloseEditBrandDialog}>取消</Button>
+                    <Button onClick={handleConfirmEditBrand} variant="contained" color="primary" startIcon={<EditIcon />}>
+                        保存修改
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* 删除品牌确认对话框 */}
+            <Dialog open={deleteBrandDialogOpen} onClose={handleCloseDeleteBrandDialog}>
+                <DialogTitle>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <DeleteIcon color="error" />
+                        确认删除品牌
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        确定要删除品牌「{deletingBrand?.name}」吗？删除后将同时移除该品牌与所有分类的关联关系，此操作不可恢复。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDeleteBrandDialog}>取消</Button>
+                    <Button onClick={handleConfirmDeleteBrand} color="error" variant="contained" startIcon={<DeleteIcon />}>
+                        删除
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* 提示消息 */}
             <Snackbar
                 open={snackbar.open}
@@ -1011,12 +1253,12 @@ export default function ProductCategory() {
                                                 </TableCell>
                                                 <TableCell sx={{ textAlign: 'center' }}>
                                                     <Tooltip title="编辑">
-                                                        <IconButton size="small" color="primary">
+                                                        <IconButton size="small" color="primary" onClick={() => handleOpenEditBrandDialog(brand)}>
                                                             <EditIcon sx={{ fontSize: 18 }} />
                                                         </IconButton>
                                                     </Tooltip>
                                                     <Tooltip title="删除">
-                                                        <IconButton size="small" color="error">
+                                                        <IconButton size="small" color="error" onClick={() => handleOpenDeleteBrandDialog(brand)}>
                                                             <DeleteIcon sx={{ fontSize: 18 }} />
                                                         </IconButton>
                                                     </Tooltip>

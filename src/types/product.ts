@@ -9,7 +9,7 @@ export interface IProduct {
 
 // 品牌
 export interface Brand {
-    brandId: number
+    brandId: string   // 用 string 避免大数字精度丢失
     name: string
     logo: string
     descript: string
