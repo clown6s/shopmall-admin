@@ -412,7 +412,7 @@ export default function ProductCategory() {
                 showStatus: newBrand.showStatus ? 1 : 0,
                 firstLetter: newBrand.firstLetter,
                 sort: newBrand.sort,
-                catId: selectedCategoryId,
+                catId: Number(selectedCategoryId),
             });
             // 刷新品牌列表
             if (selectedCategoryId) {

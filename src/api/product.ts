@@ -30,7 +30,7 @@ export interface AddBrandParams {
     showStatus: number
     firstLetter: string
     sort: number
-    catId: string        // 关联的三级分类ID
+    catId: number        // 关联的三级分类ID
 }
 
 // 添加品牌

@@ -11,7 +11,7 @@ const service: AxiosInstance = axios.create({
         (data) => {
             if (!data) return data
             try {
-                return JSONBig.parse(data)
+                return JSONBig({ useNativeBigInt: true }).parse(data)
             } catch {
                 return data
             }
