@@ -17,18 +17,26 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Avatar from '@mui/material/Avatar';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import FolderIcon from '@mui/icons-material/Folder';
+import CategoryIcon from '@mui/icons-material/Category';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import BusinessIcon from '@mui/icons-material/Business';
 import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
-import { toTreeViewItems, type CategoryTreeItem } from "../types/product.ts";
-import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi} from "../api/product.ts";
+import { toTreeViewItems, type CategoryTreeItem, type Brand } from "../types/product.ts";
+import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi} from "../api/product.ts";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
 interface FlattenCategory {
@@ -180,6 +188,12 @@ export default function ProductCategory() {
         icon: '',
         productUnit: '',
     });
+
+    // 当前选中的分类ID（用于加载品牌）
+    const [selectedCategoryId, setSelectedCategoryId] = React.useState<number | null>(null);
+    const [selectedCategoryName, setSelectedCategoryName] = React.useState<string>('');
+    const [brands, setBrands] = React.useState<Brand[]>([]);
+    const [brandsLoading, setBrandsLoading] = React.useState(false);
 
     // 显示提示
     const showSnackbar = (message: string, severity: 'success' | 'error') => {
@@ -339,6 +353,12 @@ export default function ProductCategory() {
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data.data || []));
             showSnackbar('删除成功', 'success');
+            // 如果删除的是当前选中的分类，清空品牌列表
+            if (Number(deletingId) === selectedCategoryId) {
+                setSelectedCategoryId(null);
+                setSelectedCategoryName('');
+                setBrands([]);
+            }
         } catch (err) {
             console.error('删除分类失败:', err);
             showSnackbar('删除失败', 'error');
@@ -352,6 +372,36 @@ export default function ProductCategory() {
     const handleCancelDelete = () => {
         setDeleteDialogOpen(false);
         setDeletingId(null);
+    };
+
+    // 选中分类 - 加载品牌列表
+    const handleSelectCategory = (cat: FlattenCategory) => {
+        // 只有三级分类才加载品牌
+        if (cat.catLevel === 3) {
+            setSelectedCategoryId(Number(cat.id));
+            setSelectedCategoryName(cat.name);
+            loadBrands(Number(cat.id));
+        } else {
+            // 非三级分类，清空品牌列表
+            setSelectedCategoryId(null);
+            setSelectedCategoryName('');
+            setBrands([]);
+        }
+    };
+
+    // 加载品牌列表
+    const loadBrands = async (catId: number) => {
+        if (catId === null) return;
+        setBrandsLoading(true);
+        try {
+            const res = await getBrandsByCategoryApi(catId);
+            setBrands(res.data.data || []);
+        } catch (err) {
+            console.error('加载品牌失败:', err);
+            setBrands([]);
+        } finally {
+            setBrandsLoading(false);
+        }
     };
 
     // 加载分类数据
@@ -620,42 +670,142 @@ export default function ProductCategory() {
                 </Alert>
             </Snackbar>
 
-            {/* 标题栏 */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <FolderIcon color="primary" />
-                    商品分类
-                </Typography>
-            </Box>
+            {/* 主内容区 - 左右分栏 */}
+            <Box sx={{ display: 'flex', gap: 2, height: 'calc(100vh - 120px)' }}>
+                {/* 左侧：商品分类树 */}
+                <Box sx={{ flex: '0 0 350px', display: 'flex', flexDirection: 'column' }}>
+                    {/* 标题栏 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CategoryIcon color="primary" />
+                            商品分类
+                        </Typography>
+                    </Box>
 
-            {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-                    <CircularProgress />
+                    {loading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                            <CircularProgress />
+                        </Box>
+                    ) : error ? (
+                        <Box sx={{ p: 2 }}>
+                            <Typography color="error">{error}</Typography>
+                        </Box>
+                    ) : (
+                        <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
+                            <RichTreeView
+                                defaultExpandedItems={['grid']}
+                                items={items}
+                                slots={{ item: (props: TreeItemProps) => {
+                                    const cat = computedFlatCategories.find(c => c.id === props.itemId);
+                                    return (
+                                        <CustomTreeItem
+                                            {...props}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                            onAddChild={handleAddChild}
+                                            level={cat?.catLevel}
+                                        />
+                                    );
+                                }}}
+                                onItemClick={(_event, itemId) => {
+                                    const cat = computedFlatCategories.find(c => c.id === itemId);
+                                    if (cat) {
+                                        handleSelectCategory(cat);
+                                    }
+                                }}
+                            />
+                        </Box>
+                    )}
                 </Box>
-            ) : error ? (
-                <Box sx={{ p: 2 }}>
-                    <Typography color="error">{error}</Typography>
-                </Box>
-            ) : (
-                <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 90px)', overflow: 'auto' }}>
-                    <RichTreeView
-                        defaultExpandedItems={['grid']}
-                        items={items}
-                        slots={{ item: (props: TreeItemProps) => {
-                            const cat = computedFlatCategories.find(c => c.id === props.itemId);
-                            return (
-                                <CustomTreeItem
-                                    {...props}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    onAddChild={handleAddChild}
-                                    level={cat?.catLevel}
+
+                {/* 右侧：品牌列表 */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    {/* 标题栏 */}
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                        <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <BusinessIcon color="primary" />
+                            品牌分类
+                            {selectedCategoryName && (
+                                <Chip 
+                                    label={selectedCategoryName}
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                    sx={{ ml: 1 }}
                                 />
-                            );
-                        }}}
-                    />
+                            )}
+                        </Typography>
+                    </Box>
+
+                    {/* 品牌表格 */}
+                    {selectedCategoryId === null ? (
+                        <Paper sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50' }}>
+                            <Typography color="text.secondary">
+                                👈 请选择右侧分类树中的三级分类查看关联品牌
+                            </Typography>
+                        </Paper>
+                    ) : brandsLoading ? (
+                        <Paper sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CircularProgress />
+                        </Paper>
+                    ) : brands.length === 0 ? (
+                        <Paper sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50' }}>
+                            <Typography color="text.secondary">
+                                该分类暂未关联任何品牌
+                            </Typography>
+                        </Paper>
+                    ) : (
+                        <Paper sx={{ flex: 1, overflow: 'auto' }}>
+                            <TableContainer>
+                                <Table size="small">
+                                    <TableHead sx={{ bgcolor: 'grey.100' }}>
+                                        <TableRow>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>Logo</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold' }}>品牌名称</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 100 }}>首字母</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>状态</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>排序</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold' }}>描述</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {brands.map((brand) => (
+                                            <TableRow key={brand.brandId} hover>
+                                                <TableCell>
+                                                    <Avatar 
+                                                        src={brand.logo} 
+                                                        variant="rounded"
+                                                        sx={{ width: 40, height: 40 }}
+                                                    >
+                                                        {brand.name.charAt(0)}
+                                                    </Avatar>
+                                                </TableCell>
+                                                <TableCell sx={{ fontWeight: 500 }}>{brand.name}</TableCell>
+                                                <TableCell>
+                                                    <Chip label={brand.firstLetter || '-'} size="small" variant="outlined" />
+                                                </TableCell>
+                                                <TableCell>
+                                                    {brand.showStatus === 1 ? (
+                                                        <Chip label="显示" size="small" color="success" variant="filled" />
+                                                    ) : (
+                                                        <Chip label="隐藏" size="small" color="default" variant="outlined" />
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>{brand.sort}</TableCell>
+                                                <TableCell sx={{ maxWidth: 200 }}>
+                                                    <Typography variant="body2" noWrap title={brand.descript}>
+                                                        {brand.descript || '-'}
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
+                    )}
                 </Box>
-            )}
+            </Box>
         </>
     );
 }
