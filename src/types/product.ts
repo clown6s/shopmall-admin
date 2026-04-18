@@ -89,3 +89,14 @@ export function toTreeViewItems(nodes: CategoryTreeNode[]): CategoryTreeItem[] {
         children: node.children && node.children.length > 0 ? toTreeViewItems(node.children) : undefined,
     }))
 }
+
+// 分类请求参数
+export interface CategoryParams {
+    name: string
+    parentCid: number
+    catLevel: number
+    showStatus: number
+    sort: number
+    icon: string
+    productUnit: string
+}

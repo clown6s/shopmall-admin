@@ -14,11 +14,10 @@ export const getBrandsByCategoryApi = (catId: number) =>
 export const deleteCategoryApi = (catId: number) =>
     request.delete<ApiResponse<void>>(`/product/category/${catId}`)
 
-
-// 添加分类（showStatus 布尔转数字）
+// 添加分类
 export const addCategoryApi = (data: CategoryParams) =>
-    request.post<ApiResponse<void>>('/product/category', {...data})
+    request.post<ApiResponse<void>>('/product/category', data)
 
-// 修改分类（showStatus 布尔转数字）
-export const updateCategoryApi = (catId: number, data: CategoryParams) =>
-    request.put<ApiResponse<void>>(`/product/category/${catId}`, {...data})
+// 修改分类
+export const updateCategoryApi = (catId: number, data: Omit<CategoryParams, 'catLevel'>) =>
+    request.put<ApiResponse<void>>(`/product/category/${catId}`, data)

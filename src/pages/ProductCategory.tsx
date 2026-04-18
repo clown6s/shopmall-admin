@@ -23,7 +23,7 @@ import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems, type CategoryTreeItem } from "../types/product.ts";
-import {getProductCategoryTreeApi, deleteCategoryApi} from "../api/product.ts";
+import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi} from "../api/product.ts";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
 interface FlattenCategory {
@@ -80,10 +80,11 @@ interface CustomTreeItemProps {
     onEdit: (id: string) => void;
     onDelete: (id: string) => void;
     onAddChild: (id: string) => void;
+    level?: number;
 }
 
 const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<typeof CustomTreeItemRoot> & CustomTreeItemProps>(
-    ({ label, onEdit, onDelete, onAddChild, ...props }, ref) => {
+    ({ label, onEdit, onDelete, onAddChild, level, ...props }, ref) => {
         const handleEdit = (e: React.MouseEvent) => {
             e.stopPropagation();
             onEdit(props.itemId);
@@ -99,6 +100,9 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
             onAddChild(props.itemId);
         };
 
+        // catLevel=3 的分类不显示添加子分类按钮
+        const canAddChild = level !== undefined && level < 3;
+
         return (
             <CustomTreeItemRoot
                 ref={ref}
@@ -107,11 +111,13 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', '& .action-buttons': { opacity: 0 }, '&:hover .action-buttons': { opacity: 1 } }}>
                         <span style={{ flex: 1 }}>{label}</span>
                         <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
-                            <Tooltip title="添加子分类">
-                                <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
-                                    <AddIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip>
+                            {canAddChild && (
+                                <Tooltip title="添加子分类">
+                                    <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
+                                        <AddIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                             <Tooltip title="编辑">
                                 <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
                                     <EditIcon sx={{ fontSize: 16 }} />
@@ -145,7 +151,9 @@ export default function ProductCategory() {
         severity: 'success',
     });
     const [addDialogOpen, setAddDialogOpen] = React.useState(false);
-    const [flatCategories, setFlatCategories] = React.useState<FlattenCategory[]>([]);
+
+    // 实时计算扁平化分类，用于树节点显示和下拉选择
+    const computedFlatCategories = React.useMemo(() => flattenCategories(items), [items]);
     const [newCategory, setNewCategory] = React.useState({
         name: '',
         parentCid: 0,
@@ -168,11 +176,9 @@ export default function ProductCategory() {
 
     // 打开添加分类弹窗（可选父分类ID）
     const handleOpenAddDialog = (parentId?: string) => {
-        setFlatCategories(flattenCategories(items));
-        
         if (parentId) {
             // 有父分类，自动计算层级
-            const parent = flatCategories.find(c => c.id === parentId);
+            const parent = computedFlatCategories.find(c => c.id === parentId);
             const parentLevel = parent ? parent.level + 2 : 2;
             setNewCategory({
                 name: '',
@@ -214,9 +220,25 @@ export default function ProductCategory() {
             showSnackbar('请输入分类名称', 'error');
             return;
         }
-        // TODO: 调用添加分类 API
-        console.log('添加分类:', newCategory);
-        handleCloseAddDialog();
+        try {
+            await addCategoryApi({
+                name: newCategory.name,
+                parentCid: newCategory.parentCid,
+                catLevel: newCategory.catLevel,
+                showStatus: newCategory.showStatus ? 1 : 0,
+                sort: newCategory.sort,
+                icon: newCategory.icon,
+                productUnit: newCategory.productUnit,
+            });
+            // 刷新列表
+            const res = await getProductCategoryTreeApi();
+            setItems(toTreeViewItems(res.data.data || []));
+            showSnackbar('添加成功', 'success');
+            handleCloseAddDialog();
+        } catch (err) {
+            console.error('添加分类失败:', err);
+            showSnackbar('添加失败', 'error');
+        }
     };
 
     // 编辑分类
@@ -309,7 +331,7 @@ export default function ProductCategory() {
                         <Typography variant="body1" sx={{ fontWeight: 500 }}>
                             {newCategory.parentCid === 0 
                                 ? '顶级分类（无父级）' 
-                                : (flatCategories.find(c => c.id === String(newCategory.parentCid))?.name || '未知分类')}
+                                : (computedFlatCategories.find(c => c.id === String(newCategory.parentCid))?.name || '未知分类')}
                         </Typography>
                     </Box>
 
@@ -406,14 +428,18 @@ export default function ProductCategory() {
                     <RichTreeView
                         defaultExpandedItems={['grid']}
                         items={items}
-                        slots={{ item: (props: TreeItemProps) => (
-                            <CustomTreeItem
-                                {...props}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onAddChild={handleAddChild}
-                            />
-                        )}}
+                        slots={{ item: (props: TreeItemProps) => {
+                            const cat = computedFlatCategories.find(c => c.id === props.itemId);
+                            return (
+                                <CustomTreeItem
+                                    {...props}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    onAddChild={handleAddChild}
+                                    level={cat?.catLevel}
+                                />
+                            );
+                        }}}
                     />
                 </Box>
             )}
