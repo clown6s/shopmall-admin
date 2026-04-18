@@ -72,8 +72,16 @@ export interface CategoryTreeNode {
     children?: CategoryTreeNode[]
 }
 
+// 商品分类树项类型（保留 catLevel）
+export interface CategoryTreeItem {
+    id: string
+    label: string
+    catLevel: number
+    children?: CategoryTreeItem[]
+}
+
 // 转换为 MUI TreeView 格式（保留 catLevel 用于判断）
-export function toTreeViewItems(nodes: CategoryTreeNode[]): Array<TreeViewDefaultItemModelProperties & { catLevel: number }> {
+export function toTreeViewItems(nodes: CategoryTreeNode[]): CategoryTreeItem[] {
     return nodes.map((node) => ({
         id: String(node.catId),
         label: node.name,

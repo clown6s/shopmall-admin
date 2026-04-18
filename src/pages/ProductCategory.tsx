@@ -22,7 +22,7 @@ import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
-import { toTreeViewItems } from "../types/product.ts";
+import { toTreeViewItems, type CategoryTreeItem } from "../types/product.ts";
 import {getProductCategoryTreeApi, deleteCategoryApi} from "../api/product.ts";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
@@ -30,14 +30,15 @@ interface FlattenCategory {
     id: string;
     name: string;
     level: number;
+    catLevel: number;
 }
 const flattenCategories = (
-    items: ReturnType<typeof toTreeViewItems>,
+    items: CategoryTreeItem[],
     level = 0
 ): FlattenCategory[] => {
     let result: FlattenCategory[] = [];
     for (const item of items) {
-        result.push({ id: item.id, name: item.label as string, level });
+        result.push({ id: item.id, name: item.label as string, level, catLevel: item.catLevel });
         if (item.children && item.children.length > 0) {
             result = result.concat(flattenCategories(item.children, level + 1));
         }
@@ -133,7 +134,7 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
 
 export default function ProductCategory() {
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const [items, setItems] = React.useState<ReturnType<typeof toTreeViewItems>>([]);
+    const [items, setItems] = React.useState<CategoryTreeItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
