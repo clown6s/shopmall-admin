@@ -20,8 +20,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FolderIcon from '@mui/icons-material/Folder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -628,30 +626,6 @@ export default function ProductCategory() {
                     <FolderIcon color="primary" />
                     商品分类
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button 
-                        size="small" 
-                        startIcon={<ExpandMoreIcon />}
-                        onClick={() => {/* TODO: 展开全部 */}}
-                    >
-                        展开
-                    </Button>
-                    <Button 
-                        size="small" 
-                        startIcon={<ChevronRightIcon />}
-                        onClick={() => {/* TODO: 折叠全部 */}}
-                    >
-                        折叠
-                    </Button>
-                    <Button 
-                        size="small" 
-                        variant="contained" 
-                        startIcon={<AddIcon />}
-                        onClick={() => handleOpenAddDialog()}
-                    >
-                        添加分类
-                    </Button>
-                </Box>
             </Box>
 
             {loading ? (
