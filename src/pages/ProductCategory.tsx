@@ -969,42 +969,57 @@ export default function ProductCategory() {
                                 <Table size="small">
                                     <TableHead sx={{ bgcolor: 'grey.100' }}>
                                         <TableRow>
-                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>Logo</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold' }}>品牌名称</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold', width: 100 }}>首字母</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>状态</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold', width: 80 }}>排序</TableCell>
-                                            <TableCell sx={{ fontWeight: 'bold' }}>描述</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 56, textAlign: 'center' }}>Logo</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>品牌名称</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 80, textAlign: 'center' }}>首字母</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 70, textAlign: 'center' }}>状态</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 60, textAlign: 'center' }}>排序</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>描述</TableCell>
+                                            <TableCell sx={{ fontWeight: 'bold', width: 90, textAlign: 'center' }}>操作</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {brands.map((brand) => (
                                             <TableRow key={brand.brandId} hover>
-                                                <TableCell>
-                                                    <Avatar 
-                                                        src={brand.logo} 
-                                                        variant="rounded"
-                                                        sx={{ width: 40, height: 40 }}
-                                                    >
-                                                        {brand.name.charAt(0)}
-                                                    </Avatar>
+                                                <TableCell sx={{ width: 56, textAlign: 'center' }}>
+                                                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                                        <Avatar 
+                                                            src={brand.logo} 
+                                                            variant="rounded"
+                                                            sx={{ width: 36, height: 36 }}
+                                                        >
+                                                            {brand.name.charAt(0)}
+                                                        </Avatar>
+                                                    </Box>
                                                 </TableCell>
-                                                <TableCell sx={{ fontWeight: 500 }}>{brand.name}</TableCell>
-                                                <TableCell>
+                                                <TableCell sx={{ fontWeight: 500, textAlign: 'center' }}>{brand.name}</TableCell>
+                                                <TableCell sx={{ textAlign: 'center' }}>
                                                     <Chip label={brand.firstLetter || '-'} size="small" variant="outlined" />
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell sx={{ textAlign: 'center' }}>
                                                     {brand.showStatus === 1 ? (
                                                         <Chip label="显示" size="small" color="success" variant="filled" />
                                                     ) : (
                                                         <Chip label="隐藏" size="small" color="default" variant="outlined" />
                                                     )}
                                                 </TableCell>
-                                                <TableCell>{brand.sort}</TableCell>
-                                                <TableCell sx={{ maxWidth: 200 }}>
+                                                <TableCell sx={{ textAlign: 'center' }}>{brand.sort}</TableCell>
+                                                <TableCell sx={{ textAlign: 'center' }}>
                                                     <Typography variant="body2" noWrap title={brand.descript}>
                                                         {brand.descript || '-'}
                                                     </Typography>
+                                                </TableCell>
+                                                <TableCell sx={{ textAlign: 'center' }}>
+                                                    <Tooltip title="编辑">
+                                                        <IconButton size="small" color="primary">
+                                                            <EditIcon sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="删除">
+                                                        <IconButton size="small" color="error">
+                                                            <DeleteIcon sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
