@@ -3,6 +3,12 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { styled, alpha } from '@mui/material/styles';
@@ -90,6 +96,8 @@ export default function ProductCategory() {
     const [items, setItems] = React.useState<ReturnType<typeof toTreeViewItems>>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+    const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
     // 编辑分类
     const handleEdit = (id: string) => {
@@ -97,10 +105,26 @@ export default function ProductCategory() {
         // TODO: 打开编辑弹窗
     };
 
-    // 删除分类
+    // 删除分类 - 打开确认框
     const handleDelete = (id: string) => {
-        console.log('删除分类:', id);
-        // TODO: 确认删除逻辑
+        setDeletingId(id);
+        setDeleteDialogOpen(true);
+    };
+
+    // 确认删除
+    const handleConfirmDelete = () => {
+        if (deletingId) {
+            console.log('确认删除分类:', deletingId);
+            // TODO: 调用删除 API
+        }
+        setDeleteDialogOpen(false);
+        setDeletingId(null);
+    };
+
+    // 取消删除
+    const handleCancelDelete = () => {
+        setDeleteDialogOpen(false);
+        setDeletingId(null);
     };
 
     // 加载分类数据
@@ -121,35 +145,48 @@ export default function ProductCategory() {
 
         loadCategories();
     }, []);
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200}}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (error) {
-        return (
-            <Box sx={{ p: 2 }}>
-                <Typography color="error">{error}</Typography>
-            </Box>
-        );
-    }
 
     return (
-        <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 50px)', overflow: 'auto' }}>
-            <RichTreeView
-                defaultExpandedItems={['grid']}
-                items={items}
-                slots={{ item: (props: TreeItemProps) => (
-                    <CustomTreeItem
-                        {...props}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+        <>
+            {/* 删除确认对话框 */}
+            <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+                <DialogTitle>确认删除</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        确定要删除该分类吗？删除后无法恢复。
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDelete}>取消</Button>
+                    <Button onClick={handleConfirmDelete} color="error" variant="contained">
+                        删除
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+                    <CircularProgress />
+                </Box>
+            ) : error ? (
+                <Box sx={{ p: 2 }}>
+                    <Typography color="error">{error}</Typography>
+                </Box>
+            ) : (
+                <Box ref={containerRef} sx={{ width: 300, height: 'calc(100% - 50px)', overflow: 'auto' }}>
+                    <RichTreeView
+                        defaultExpandedItems={['grid']}
+                        items={items}
+                        slots={{ item: (props: TreeItemProps) => (
+                            <CustomTreeItem
+                                {...props}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                            />
+                        )}}
                     />
-                )}}
-            />
-        </Box>
+                </Box>
+            )}
+        </>
     );
 }
