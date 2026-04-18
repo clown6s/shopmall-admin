@@ -9,6 +9,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { styled, alpha } from '@mui/material/styles';
@@ -98,6 +100,21 @@ export default function ProductCategory() {
     const [error, setError] = React.useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
     const [deletingId, setDeletingId] = React.useState<string | null>(null);
+    const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+        open: false,
+        message: '',
+        severity: 'success',
+    });
+
+    // 显示提示
+    const showSnackbar = (message: string, severity: 'success' | 'error') => {
+        setSnackbar({ open: true, message, severity });
+    };
+
+    // 关闭提示
+    const handleSnackbarClose = () => {
+        setSnackbar((prev) => ({ ...prev, open: false }));
+    };
 
     // 编辑分类
     const handleEdit = (id: string) => {
@@ -116,11 +133,12 @@ export default function ProductCategory() {
         if (!deletingId) return;
         try {
             await deleteCategoryApi(Number(deletingId));
-            // 删除成功后刷新列表
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data.data || []));
+            showSnackbar('删除成功', 'success');
         } catch (err) {
             console.error('删除分类失败:', err);
+            showSnackbar('删除失败', 'error');
         } finally {
             setDeleteDialogOpen(false);
             setDeletingId(null);
@@ -169,6 +187,23 @@ export default function ProductCategory() {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* 提示消息 */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={handleSnackbarClose}
+                    severity={snackbar.severity}
+                    variant="filled"
+                    sx={{ width: '100%' }}
+                >
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
 
             {loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
