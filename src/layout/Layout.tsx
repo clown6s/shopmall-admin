@@ -18,12 +18,12 @@ import {
     IconButton,
 } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
-import PeopleIcon from '@mui/icons-material/People'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SecurityIcon from '@mui/icons-material/Security'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'
+import BadgeIcon from '@mui/icons-material/Badge'
 import CategoryIcon from '@mui/icons-material/Category'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -39,7 +39,6 @@ const DRAWER_COLLAPSED_WIDTH = 72
 
 const navItems = [
     { label: '仪表盘', path: '/', icon: <DashboardIcon />, color: '#667eea' },
-    { label: '用户管理', path: '/users', icon: <PeopleIcon />, color: '#f093fb' },
 ]
 
 const productMenuItems = [
@@ -48,6 +47,7 @@ const productMenuItems = [
 ]
 
 const systemMenuItems = [
+    { label: '员工管理', path: '/system/employee', icon: <BadgeIcon />, color: '#38bdf8' },
     { label: '角色管理', path: '/system/role', icon: <AssignmentIndIcon />, color: '#f5576c' },
     { label: '菜单管理', path: '/system/menu', icon: <MenuBookIcon />, color: '#43e97b' },
     { label: '权限管理', path: '/system/permission', icon: <SecurityIcon />, color: '#fa709a' },

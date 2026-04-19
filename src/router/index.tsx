@@ -5,7 +5,7 @@ import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
 import Product from '../pages/Product'
 import ProductCategory from '../pages/ProductCategory'
-import Users from '../pages/Users'
+import Employee from '../pages/Employee'
 import Role from '../pages/Role'
 import Menu from '../pages/Menu'
 import Permission from '../pages/Permission'
@@ -26,7 +26,7 @@ const router = createBrowserRouter([
                     { index: true, element: <Dashboard /> },
                     { path: 'product', element: <Product /> },
                     { path: 'product/category', element: <ProductCategory /> },
-                    { path: 'users', element: <Users /> },
+                    { path: 'system/employee', element: <Employee /> },
                     { path: 'system/role', element: <Role /> },
                     { path: 'system/menu', element: <Menu /> },
                     { path: 'system/permission', element: <Permission /> },

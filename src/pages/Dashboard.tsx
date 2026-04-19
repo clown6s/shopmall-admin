@@ -1,19 +1,17 @@
 // src/pages/Dashboard.tsx
-import { type JSX, useEffect, useState } from 'react'
+import { type JSX } from 'react'
 import {
     Grid,
     Card,
     CardContent,
     Typography,
     Box,
-    CircularProgress,
     Chip,
 } from '@mui/material'
 import PeopleIcon from '@mui/icons-material/People'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import MapIcon from '@mui/icons-material/Map'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import { getUsersApi } from '../api/user'
 
 interface StatCard {
     label: string
@@ -25,27 +23,7 @@ interface StatCard {
 }
 
 export default function Dashboard(): JSX.Element {
-    const [userTotal, setUserTotal] = useState<number | null>(null)
-    const [loading, setLoading] = useState(true)
-
-    useEffect(() => {
-        getUsersApi({ page: 1, pageSize: 1 })
-            .then((res) => {
-                setUserTotal(res.data.data.total)
-            })
-            .catch(() => setUserTotal(0))
-            .finally(() => setLoading(false))
-    }, [])
-
     const stats: StatCard[] = [
-        {
-            label: '注册用户',
-            value: loading ? '—' : (userTotal ?? 0),
-            subtext: '较上月 +12%',
-            icon: <PeopleIcon sx={{ fontSize: 28 }} />,
-            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            iconBg: 'rgba(102, 126, 234, 0.15)',
-        },
         {
             label: '商品 SPU',
             value: '—',
@@ -70,6 +48,14 @@ export default function Dashboard(): JSX.Element {
             gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
             iconBg: 'rgba(67, 233, 123, 0.15)',
         },
+        {
+            label: '待处理订单',
+            value: '—',
+            subtext: '待接入数据',
+            icon: <PeopleIcon sx={{ fontSize: 28 }} />,
+            gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            iconBg: 'rgba(102, 126, 234, 0.15)',
+        },
     ]
 
     return (
@@ -92,12 +78,6 @@ export default function Dashboard(): JSX.Element {
                     欢迎使用 ShopMall 管理系统，以下是今日数据概览
                 </Typography>
             </Box>
-
-            {loading && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
-                    <CircularProgress />
-                </Box>
-            )}
 
             {/* Stats Cards */}
             <Grid container spacing={3}>

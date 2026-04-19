@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import useUserStore from '../store/useUserStore'
-import { loginApi } from '../api/user'
+import { loginApi } from '../api/employee'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
