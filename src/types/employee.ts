@@ -21,7 +21,6 @@ export interface IEmployee {
     position: string
     role: string
     workStatus: number
-    loginStatus: number
     canLogin: number
     remark: string
     createTime: string
@@ -39,7 +38,6 @@ export interface CreateEmployeeForm {
     position?: string
     role?: string
     workStatus?: number
-    loginStatus?: number
     canLogin?: number
     remark?: string
 }

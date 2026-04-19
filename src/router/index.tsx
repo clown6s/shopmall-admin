@@ -6,6 +6,7 @@ import Dashboard from '../pages/Dashboard'
 import Product from '../pages/Product'
 import ProductCategory from '../pages/ProductCategory'
 import Employee from '../pages/Employee'
+import Department from '../pages/Department'
 import RequireAuth from './RequireAuth'
 
 const router = createBrowserRouter([
@@ -24,6 +25,7 @@ const router = createBrowserRouter([
                     { path: 'product', element: <Product /> },
                     { path: 'product/category', element: <ProductCategory /> },
                     { path: 'system/employee', element: <Employee /> },
+                    { path: 'system/department', element: <Department /> },
                 ],
             },
         ],

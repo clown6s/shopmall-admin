@@ -22,6 +22,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront'
 import SettingsIcon from '@mui/icons-material/Settings'
 import BadgeIcon from '@mui/icons-material/Badge'
 import CategoryIcon from '@mui/icons-material/Category'
+import GroupsIcon from '@mui/icons-material/Groups'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -45,6 +46,7 @@ const productMenuItems = [
 
 const systemMenuItems = [
     { label: '员工管理', path: '/system/employee', icon: <BadgeIcon />, color: '#38bdf8' },
+    { label: '部门管理', path: '/system/department', icon: <GroupsIcon />, color: '#34d399' },
 ]
 
 export default function Layout(): JSX.Element {
@@ -542,7 +544,7 @@ export default function Layout(): JSX.Element {
                     p: 3,
                     mt: '64px',
                     height: 'calc(100vh - 64px)',
-                    overflow: 'hidden',
+                    overflowY: 'auto',
                     background: '#f8fafc',
                     transition: 'margin-left 0.25s ease',
                 }}

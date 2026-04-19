@@ -17,6 +17,7 @@ export const getEmployeesApi = (params: {
     page: number
     pageSize: number
     realName?: string
+    phone?: string
 }) =>
     request.get<ApiResponse<{ list: IEmployee[]; total: number; page: number; pageSize: number }>>(
         '/employee',
