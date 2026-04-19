@@ -42,8 +42,12 @@ service.interceptors.response.use(
     },
     (error: AxiosError<ApiResponse<unknown>>) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('token')
-            window.location.href = '/login'
+            // 只有在已登录状态下（localStorage 有 token）才跳转
+            // 登录页本身的 401 应该透传给上层展示错误提示，不能跳转
+            if (localStorage.getItem('token')) {
+                localStorage.removeItem('token')
+                window.location.href = '/login'
+            }
         }
         return Promise.reject(error)
     }

@@ -229,7 +229,6 @@ export default function Dashboard(): JSX.Element {
                                 {[
                                     { label: '用户管理', desc: '查看和管理系统用户', path: '/users' },
                                     { label: '商品管理', desc: '管理商品信息和库存', path: '/product' },
-                                    { label: '角色权限', desc: '配置系统角色和权限', path: '/system/role' },
                                 ].map((item, idx) => (
                                     <Box
                                         key={item.label}

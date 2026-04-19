@@ -6,9 +6,6 @@ import Dashboard from '../pages/Dashboard'
 import Product from '../pages/Product'
 import ProductCategory from '../pages/ProductCategory'
 import Employee from '../pages/Employee'
-import Role from '../pages/Role'
-import Menu from '../pages/Menu'
-import Permission from '../pages/Permission'
 import RequireAuth from './RequireAuth'
 
 const router = createBrowserRouter([
@@ -27,9 +24,6 @@ const router = createBrowserRouter([
                     { path: 'product', element: <Product /> },
                     { path: 'product/category', element: <ProductCategory /> },
                     { path: 'system/employee', element: <Employee /> },
-                    { path: 'system/role', element: <Role /> },
-                    { path: 'system/menu', element: <Menu /> },
-                    { path: 'system/permission', element: <Permission /> },
                 ],
             },
         ],

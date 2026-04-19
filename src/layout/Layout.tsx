@@ -20,9 +20,6 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import StorefrontIcon from '@mui/icons-material/Storefront'
 import SettingsIcon from '@mui/icons-material/Settings'
-import SecurityIcon from '@mui/icons-material/Security'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'
 import BadgeIcon from '@mui/icons-material/Badge'
 import CategoryIcon from '@mui/icons-material/Category'
 import ExpandLess from '@mui/icons-material/ExpandLess'
@@ -48,13 +45,11 @@ const productMenuItems = [
 
 const systemMenuItems = [
     { label: '员工管理', path: '/system/employee', icon: <BadgeIcon />, color: '#38bdf8' },
-    { label: '角色管理', path: '/system/role', icon: <AssignmentIndIcon />, color: '#f5576c' },
-    { label: '菜单管理', path: '/system/menu', icon: <MenuBookIcon />, color: '#43e97b' },
-    { label: '权限管理', path: '/system/permission', icon: <SecurityIcon />, color: '#fa709a' },
 ]
 
 export default function Layout(): JSX.Element {
     const logout = useUserStore((state) => state.logout)
+    const userInfo = useUserStore((state) => state.userInfo)
     const navigate = useNavigate()
     const location = useLocation()
     const [systemMenuOpen, setSystemMenuOpen] = useState(false)
@@ -502,15 +497,21 @@ export default function Layout(): JSX.Element {
                                 border: '1px solid #e2e8f0',
                             }}
                         >
-                            <Avatar sx={{ width: 40, height: 40, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600 }}>
-                                A
-                            </Avatar>
+                            {userInfo?.avatar ? (
+                                <Avatar src={userInfo.avatar} sx={{ width: 40, height: 40, fontWeight: 600 }}>
+                                    {userInfo.realName?.charAt(0).toUpperCase()}
+                                </Avatar>
+                            ) : (
+                                <Avatar sx={{ width: 40, height: 40, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600 }}>
+                                    {userInfo?.realName?.charAt(0).toUpperCase() ?? '?'}
+                                </Avatar>
+                            )}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    管理员
+                                    {userInfo?.realName ?? '未知用户'}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                                    admin@shopmall.com
+                                    {userInfo?.phone ?? ''}
                                 </Typography>
                             </Box>
                         </Box>
@@ -518,10 +519,16 @@ export default function Layout(): JSX.Element {
                 )}
                 {collapsed && (
                     <Box sx={{ p: 1.5, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'center' }}>
-                        <Tooltip title="管理员" placement="right">
-                            <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600, cursor: 'default' }}>
-                                A
-                            </Avatar>
+                        <Tooltip title={userInfo?.realName ?? '未知用户'} placement="right">
+                            {userInfo?.avatar ? (
+                                <Avatar src={userInfo.avatar} sx={{ width: 36, height: 36, fontWeight: 600, cursor: 'default' }}>
+                                    {userInfo.realName?.charAt(0).toUpperCase()}
+                                </Avatar>
+                            ) : (
+                                <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600, cursor: 'default' }}>
+                                    {userInfo?.realName?.charAt(0).toUpperCase() ?? '?'}
+                                </Avatar>
+                            )}
                         </Tooltip>
                     </Box>
                 )}

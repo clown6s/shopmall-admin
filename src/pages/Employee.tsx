@@ -45,14 +45,17 @@ const GENDER_MAP: Record<number, { label: string; color: 'primary' | 'secondary'
 }
 
 const DEFAULT_FORM: CreateEmployeeForm = {
-    name: '',
+    realName: '',
     phone: '',
     email: '',
     age: undefined,
     gender: 1,
-    position: '',
     department: '',
-    status: 1,
+    position: '',
+    role: '普通角色',
+    workStatus: 1,
+    loginStatus: 1,
+    canLogin: 1,
     remark: '',
 }
 
@@ -80,10 +83,9 @@ export default function Employee(): JSX.Element {
         setLoading(true)
         setError('')
         try {
-            const res = await getEmployeesApi({ page, pageSize, name: search || undefined })
-            const d = res.data.data
-            setList(d.list)
-            setTotal(d.total)
+            const res = await getEmployeesApi({ page, pageSize, realName: search || undefined })
+            setList(res.data.data.list)
+            setTotal(res.data.data.total)
         } catch {
             setError('获取员工列表失败')
         } finally {
@@ -102,7 +104,7 @@ export default function Employee(): JSX.Element {
 
     const handleCreate = async () => {
         setFormError('')
-        if (!form.name || !form.phone) {
+        if (!form.realName || !form.phone) {
             setFormError('姓名和手机号为必填项')
             return
         }
@@ -113,10 +115,7 @@ export default function Employee(): JSX.Element {
             setForm({ ...DEFAULT_FORM })
             fetchData()
         } catch (err: unknown) {
-            const msg =
-                (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? '创建失败'
-            setFormError(msg)
+            setFormError(getErrorMsg(err, '创建失败'))
         } finally {
             setSubmitting(false)
         }
@@ -125,21 +124,18 @@ export default function Employee(): JSX.Element {
     const handleEdit = async () => {
         if (!currentEmployee) return
         setFormError('')
-        if (!form.name || !form.phone) {
+        if (!form.realName || !form.phone) {
             setFormError('姓名和手机号为必填项')
             return
         }
         try {
             setSubmitting(true)
-            await updateEmployeeApi(currentEmployee.id, form)
+            await updateEmployeeApi(currentEmployee.employeeId, form)
             setOpenEdit(false)
             setCurrentEmployee(null)
             fetchData()
         } catch (err: unknown) {
-            const msg =
-                (err as { response?: { data?: { message?: string } } })
-                    ?.response?.data?.message ?? '更新失败'
-            setFormError(msg)
+            setFormError(getErrorMsg(err, '更新失败'))
         } finally {
             setSubmitting(false)
         }
@@ -149,7 +145,7 @@ export default function Employee(): JSX.Element {
         if (!deleteTarget) return
         try {
             setDeleting(true)
-            await deleteEmployeeApi(deleteTarget.id)
+            await deleteEmployeeApi(deleteTarget.employeeId)
             setDeleteTarget(null)
             fetchData()
         } catch {
@@ -159,25 +155,63 @@ export default function Employee(): JSX.Element {
         }
     }
 
-    const getInitials = (name: string) => {
-        return name ? name.charAt(0).toUpperCase() : '?'
+    const getInitials = (name: string) => (name ? name.charAt(0).toUpperCase() : '?')
+
+    const initForm = (emp: IEmployee) => {
+        setForm({
+            realName: emp.realName,
+            phone: emp.phone,
+            email: emp.email,
+            age: emp.age,
+            gender: emp.gender,
+            department: emp.department,
+            position: emp.position,
+            role: emp.role || '普通角色',
+            workStatus: emp.workStatus,
+            loginStatus: emp.loginStatus,
+            canLogin: emp.canLogin,
+            remark: emp.remark,
+        })
     }
 
+    const handleOpenEdit = (emp: IEmployee) => {
+        setCurrentEmployee(emp)
+        initForm(emp)
+        setFormError('')
+        setOpenEdit(true)
+    }
+
+    const handleOpenCreate = () => {
+        setForm({ ...DEFAULT_FORM })
+        setFormError('')
+        setOpenCreate(true)
+    }
+
+    const getErrorMsg = (err: unknown, fallback: string) => {
+        return (
+            (err as { response?: { data?: { message?: string } } })
+                ?.response?.data?.message ?? fallback
+        )
+    }
+
+    const isEditMode = Boolean(currentEmployee)
+
     const formFields = (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {formError && (
                 <Alert severity="error" sx={{ borderRadius: '12px' }}>
                     {formError}
                 </Alert>
             )}
-            <TextField
-                label="姓名 *"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                fullWidth
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-            />
+            {/* 基本信息 */}
             <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                    label="姓名 *"
+                    value={form.realName}
+                    onChange={(e) => setForm({ ...form, realName: e.target.value })}
+                    fullWidth
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                />
                 <TextField
                     label="手机号 *"
                     value={form.phone}
@@ -186,6 +220,9 @@ export default function Employee(): JSX.Element {
                     fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
+            </Box>
+            {/* 联系方式 */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                     label="邮箱"
                     value={form.email}
@@ -193,8 +230,6 @@ export default function Employee(): JSX.Element {
                     fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                     label="部门"
                     value={form.department}
@@ -202,6 +237,9 @@ export default function Employee(): JSX.Element {
                     fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
+            </Box>
+            {/* 职位信息 */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                     label="职位"
                     value={form.position}
@@ -209,8 +247,6 @@ export default function Employee(): JSX.Element {
                     fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                     label="年龄"
                     type="number"
@@ -222,40 +258,98 @@ export default function Employee(): JSX.Element {
                     fullWidth
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 />
+            </Box>
+            {/* 性别 / 角色 / 状态 */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
                 <TextField
                     label="性别"
                     select
-                    value={form.gender}
+                    value={form.gender ?? 1}
                     onChange={(e) => setForm({ ...form, gender: Number(e.target.value) })}
                     fullWidth
-                    slotProps={{
-                        select: { native: true },
-                    }}
+                    slotProps={{ select: { native: true } }}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                 >
                     <option value={1}>男</option>
                     <option value={2}>女</option>
                     <option value={3}>未知</option>
                 </TextField>
+                <TextField
+                    label="角色"
+                    select
+                    value={form.role ?? '普通角色'}
+                    onChange={(e) => setForm({ ...form, role: e.target.value })}
+                    fullWidth
+                    slotProps={{ select: { native: true } }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                >
+                    <option value="管理员">管理员</option>
+                    <option value="普通角色">普通角色</option>
+                </TextField>
+                {isEditMode ? (
+                    <TextField
+                        label="在职状态"
+                        select
+                        value={form.workStatus ?? 1}
+                        onChange={(e) => setForm({ ...form, workStatus: Number(e.target.value) })}
+                        fullWidth
+                        slotProps={{ select: { native: true } }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    >
+                        <option value={1}>在职</option>
+                        <option value={0}>离职</option>
+                    </TextField>
+                ) : null}
             </Box>
-            <FormControlLabel
-                control={
-                    <Switch
-                        checked={form.status === 1}
-                        onChange={(e) => setForm({ ...form, status: e.target.checked ? 1 : 0 })}
-                        sx={{
-                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#667eea' },
-                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                backgroundColor: '#667eea',
-                            },
-                        }}
+            {/* 账号状态 */}
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={form.canLogin === 1}
+                            onChange={(e) => setForm({ ...form, canLogin: e.target.checked ? 1 : 0 })}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#667eea' },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#667eea',
+                                },
+                            }}
+                        />
+                    }
+                    label="后台权限"
+                    sx={{ mr: 2 }}
+                />
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={form.loginStatus === 1}
+                            onChange={(e) => setForm({ ...form, loginStatus: e.target.checked ? 1 : 0 })}
+                            sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': { color: '#667eea' },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: '#667eea',
+                                },
+                            }}
+                        />
+                    }
+                    label="账号状态"
+                    sx={{ mr: 2 }}
+                />
+                {!isEditMode && (
+                    <TextField
+                        label="初始密码"
+                        type="password"
+                        value={form.password ?? ''}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                        slotProps={{ htmlInput: { autocomplete: 'new-password' } }}
                     />
-                }
-                label="在职"
-            />
+                )}
+            </Box>
+            {/* 备注 */}
             <TextField
                 label="备注"
-                value={form.remark}
+                value={form.remark ?? ''}
                 onChange={(e) => setForm({ ...form, remark: e.target.value })}
                 multiline
                 rows={2}
@@ -280,11 +374,7 @@ export default function Employee(): JSX.Element {
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
-                    onClick={() => {
-                        setForm({ ...DEFAULT_FORM })
-                        setFormError('')
-                        setOpenCreate(true)
-                    }}
+                    onClick={handleOpenCreate}
                     sx={{
                         borderRadius: '12px',
                         px: 3,
@@ -359,10 +449,7 @@ export default function Employee(): JSX.Element {
             {error && (
                 <Alert
                     severity="error"
-                    sx={{
-                        mb: 3,
-                        borderRadius: '12px',
-                    }}
+                    sx={{ mb: 3, borderRadius: '12px' }}
                 >
                     {error}
                 </Alert>
@@ -381,14 +468,15 @@ export default function Employee(): JSX.Element {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ background: '#f8fafc' }}>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b', pl: 3 }}>员工信息</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>部门 / 职位</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>联系方式</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>性别</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>年龄</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>状态</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b' }}>入职时间</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', pr: 3 }}>
+                                <TableCell sx={{ fontWeight: 600, color: '#64748b', pl: 3, py: 1.5 }}>员工信息</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>岗位</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>联系方式</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>性别</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>年龄</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>角色</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>入职日期</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5, pr: 3 }}>
                                     操作
                                 </TableCell>
                             </TableRow>
@@ -396,14 +484,14 @@ export default function Employee(): JSX.Element {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                                    <TableCell colSpan={10} align="center" sx={{ py: 6 }}>
                                         <CircularProgress size={32} sx={{ color: '#667eea' }} />
                                     </TableCell>
                                 </TableRow>
                             ) : list.length === 0 ? (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={8}
+                                        colSpan={10}
                                         align="center"
                                         sx={{ py: 8, color: 'text.secondary' }}
                                     >
@@ -418,103 +506,105 @@ export default function Employee(): JSX.Element {
                                     const g = GENDER_MAP[emp.gender] ?? GENDER_MAP[3]
                                     return (
                                         <TableRow
-                                            key={emp.id}
+                                            key={emp.employeeId}
                                             hover
                                             sx={{
                                                 '&:hover': { background: '#f8fafc' },
                                                 transition: 'background 0.2s ease',
                                             }}
                                         >
-                                            <TableCell sx={{ pl: 3 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <Avatar
-                                                        sx={{
-                                                            width: 40,
-                                                            height: 40,
-                                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                            fontWeight: 600,
-                                                        }}
-                                                    >
-                                                        {getInitials(emp.name)}
-                                                    </Avatar>
+                                            <TableCell sx={{ pl: 3, py: 1.5 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                    {emp.avatar ? (
+                                                        <Avatar
+                                                            src={emp.avatar}
+                                                            sx={{ width: 36, height: 36, fontWeight: 600 }}
+                                                        />
+                                                    ) : (
+                                                        <Avatar
+                                                            sx={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                                fontWeight: 600,
+                                                                fontSize: 14,
+                                                            }}
+                                                        >
+                                                            {getInitials(emp.realName)}
+                                                        </Avatar>
+                                                    )}
                                                     <Box>
                                                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                            {emp.name}
+                                                            {emp.realName}
                                                         </Typography>
                                                         <Typography variant="caption" color="text.secondary">
-                                                            ID: {emp.id}
+                                                            ID: {emp.employeeId}
                                                         </Typography>
                                                     </Box>
                                                 </Box>
                                             </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">{emp.department || '—'}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {emp.position || '未分配'}
+                                            <TableCell align="center" sx={{ py: 1.5 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                    {emp.department || '—'}
+                                                    {emp.department && emp.position && ' / '}
+                                                    {emp.position || ''}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>
                                                 <Typography variant="body2">{emp.phone}</Typography>
                                                 <Typography variant="caption" color="text.secondary">
-                                                    {emp.email || '未设置邮箱'}
+                                                    {emp.email || '—'}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>
                                                 <Chip
                                                     icon={g.icon}
                                                     label={g.label}
                                                     color={g.color}
                                                     size="small"
                                                     sx={{
-                                                        height: 28,
-                                                        '& .MuiChip-icon': { fontSize: 16 },
+                                                        height: 26,
+                                                        '& .MuiChip-icon': { fontSize: 15 },
                                                     }}
                                                 />
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>
                                                 <Typography variant="body2">
-                                                    {emp.age ? `${emp.age} 岁` : '—'}
+                                                    {emp.age ? `${emp.age}岁` : '—'}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell align="center">
                                                 <Chip
-                                                    label={emp.status === 1 ? '在职' : '离职'}
-                                                    color={emp.status === 1 ? 'success' : 'default'}
+                                                    label={emp.role || '普通角色'}
                                                     size="small"
                                                     sx={{
-                                                        height: 28,
+                                                        height: 24,
                                                         fontWeight: 500,
-                                                        '& .MuiChip-label': { px: 1.5 },
+                                                        background: emp.role === '管理员' ? '#fef3c7' : '#f0fdf4',
+                                                        color: emp.role === '管理员' ? '#d97706' : '#16a34a',
+                                                        border: emp.role === '管理员' ? '1px solid #fde68a' : '1px solid #bbf7d0',
+                                                        '& .MuiChip-label': { px: 1 },
                                                     }}
                                                 />
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>
+                                                <Chip
+                                                    label={emp.workStatus === 1 ? '在职' : '离职'}
+                                                    color={emp.workStatus === 1 ? 'success' : 'default'}
+                                                    size="small"
+                                                    sx={{ height: 24, fontWeight: 500, '& .MuiChip-label': { px: 1 } }}
+                                                />
+                                            </TableCell>
+                                            <TableCell sx={{ py: 1.5 }}>
                                                 <Typography variant="body2">
-                                                    {emp.createdAt
-                                                        ? new Date(emp.createdAt).toLocaleDateString('zh-CN')
-                                                        : '—'}
+                                                    {emp.createTime ? emp.createTime.split(' ')[0] : '—'}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center" sx={{ pr: 3 }}>
+                                            <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
                                                 <Tooltip title="编辑">
                                                     <IconButton
                                                         size="small"
-                                                        onClick={() => {
-                                                            setCurrentEmployee(emp)
-                                                            setForm({
-                                                                name: emp.name,
-                                                                phone: emp.phone,
-                                                                email: emp.email,
-                                                                age: emp.age,
-                                                                gender: emp.gender,
-                                                                department: emp.department,
-                                                                position: emp.position,
-                                                                status: emp.status,
-                                                                remark: emp.remark,
-                                                            })
-                                                            setFormError('')
-                                                            setOpenEdit(true)
-                                                        }}
+                                                        onClick={() => handleOpenEdit(emp)}
                                                         sx={{
                                                             color: '#64748b',
                                                             '&:hover': {
@@ -598,11 +688,7 @@ export default function Employee(): JSX.Element {
                 <DialogActions sx={{ px: 3, pb: 3 }}>
                     <Button
                         onClick={() => setOpenCreate(false)}
-                        sx={{
-                            borderRadius: '10px',
-                            px: 3,
-                            color: '#64748b',
-                        }}
+                        sx={{ borderRadius: '10px', px: 3, color: '#64748b' }}
                     >
                         取消
                     </Button>
@@ -637,20 +723,16 @@ export default function Employee(): JSX.Element {
                     },
                 }}
             >
-                <DialogTitle sx={{ pb: 1, pt: 3, px: 3 }}>
+                <DialogTitle sx={{ pb: 2, pt: 3, px: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         编辑员工
                     </Typography>
                 </DialogTitle>
-                <DialogContent sx={{ px: 3, py: 2 }}>{formFields}</DialogContent>
+                <DialogContent sx={{ px: 3, pt: '24px !important', pb: 2 }}>{formFields}</DialogContent>
                 <DialogActions sx={{ px: 3, pb: 3 }}>
                     <Button
                         onClick={() => setOpenEdit(false)}
-                        sx={{
-                            borderRadius: '10px',
-                            px: 3,
-                            color: '#64748b',
-                        }}
+                        sx={{ borderRadius: '10px', px: 3, color: '#64748b' }}
                     >
                         取消
                     </Button>
@@ -676,9 +758,7 @@ export default function Employee(): JSX.Element {
                 onClose={() => setDeleteTarget(null)}
                 slotProps={{
                     paper: {
-                        sx: {
-                            borderRadius: '20px',
-                        },
+                        sx: { borderRadius: '20px' },
                     },
                 }}
             >
@@ -689,16 +769,13 @@ export default function Employee(): JSX.Element {
                 </DialogTitle>
                 <DialogContent>
                     <Typography color="text.secondary">
-                        确定要删除员工 <strong>{deleteTarget?.name}</strong>（ID: {deleteTarget?.id}）吗？
+                        确定要删除员工 <strong>{deleteTarget?.realName}</strong>（ID: {deleteTarget?.employeeId}）吗？
                         <br />
                         此操作不可撤销。
                     </Typography>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button
-                        onClick={() => setDeleteTarget(null)}
-                        sx={{ borderRadius: '10px' }}
-                    >
+                    <Button onClick={() => setDeleteTarget(null)} sx={{ borderRadius: '10px' }}>
                         取消
                     </Button>
                     <Button

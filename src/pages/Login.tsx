@@ -23,6 +23,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront'
 
 export default function Login(): JSX.Element {
     const setToken = useUserStore((state) => state.setToken)
+    const setUserInfo = useUserStore((state) => state.setUserInfo)
     const navigate = useNavigate()
 
     const [mobile, setPhone] = useState('')
@@ -40,8 +41,9 @@ export default function Login(): JSX.Element {
         try {
             setLoading(true)
             const res = await loginApi(mobile, password)
-            const { token } = res.data.data
+            const { token, employeeId, realName, avatar, phone, canLogin } = res.data.data
             setToken(token)
+            setUserInfo({ employeeId, realName, avatar, phone, canLogin })
             navigate('/', { replace: true })
         } catch (err: unknown) {
             const msg =
