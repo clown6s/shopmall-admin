@@ -41,9 +41,9 @@ export default function Login(): JSX.Element {
         try {
             setLoading(true)
             const res = await loginApi(mobile, password)
-            const { token, employeeId, realName, avatar, phone, canLogin } = res.data.data
+            const { token, employeeId, realName, avatar, phone, role, canLogin } = res.data.data
             setToken(token)
-            setUserInfo({ employeeId, realName, avatar, phone, canLogin })
+            setUserInfo({ employeeId, realName, avatar, phone, role, canLogin })
             navigate('/', { replace: true })
         } catch (err: unknown) {
             const msg =

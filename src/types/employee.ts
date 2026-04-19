@@ -6,6 +6,7 @@ export interface LoginResp {
     phone: string
     realName: string
     avatar: string
+    role: string
     canLogin: number
 }
 

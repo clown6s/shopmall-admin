@@ -37,6 +37,7 @@ import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
 import { toTreeViewItems, type CategoryTreeItem, type Brand } from "../types/product.ts";
 import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi, addBrandApi, updateBrandApi, deleteBrandApi} from "../api/product.ts";
+import { useIsAdmin } from "../hooks/useIsAdmin";
 
 // 扁平化树形数据，用于下拉选择（带缩进显示层级）
 interface FlattenCategory {
@@ -95,10 +96,11 @@ interface CustomTreeItemProps {
     onDelete: (id: string) => void;
     onAddChild: (id: string) => void;
     level?: number;
+    isAdmin?: boolean;
 }
 
 const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<typeof CustomTreeItemRoot> & CustomTreeItemProps>(
-    ({ label, onEdit, onDelete, onAddChild, level, ...props }, ref) => {
+    ({ label, onEdit, onDelete, onAddChild, level, isAdmin, ...props }, ref) => {
         const handleEdit = (e: React.MouseEvent) => {
             e.stopPropagation();
             onEdit(props.itemId);
@@ -124,25 +126,27 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
                 label={
                     <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', '& .action-buttons': { opacity: 0 }, '&:hover .action-buttons': { opacity: 1 } }}>
                         <span style={{ flex: 1 }}>{label}</span>
-                        <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
-                            {canAddChild && (
-                                <Tooltip title="添加子分类">
-                                    <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
-                                        <AddIcon sx={{ fontSize: 16 }} />
+                        {isAdmin && (
+                            <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
+                                {canAddChild && (
+                                    <Tooltip title="添加子分类">
+                                        <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
+                                            <AddIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                                <Tooltip title="编辑">
+                                    <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
+                                        <EditIcon sx={{ fontSize: 16 }} />
                                     </IconButton>
                                 </Tooltip>
-                            )}
-                            <Tooltip title="编辑">
-                                <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
-                                    <EditIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="删除">
-                                <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
-                                    <DeleteIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip>
-                        </Box>
+                                <Tooltip title="删除">
+                                    <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
+                                        <DeleteIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        )}
                     </Box>
                 }
             />
@@ -221,6 +225,8 @@ export default function ProductCategory() {
     // 删除品牌弹窗状态
     const [deleteBrandDialogOpen, setDeleteBrandDialogOpen] = React.useState(false);
     const [deletingBrand, setDeletingBrand] = React.useState<Brand | null>(null);
+
+    const isAdmin = useIsAdmin();
 
     // 显示提示
     const showSnackbar = (message: string, severity: 'success' | 'error' | 'warning') => {
@@ -1146,6 +1152,7 @@ export default function ProductCategory() {
                                             onDelete={handleDelete}
                                             onAddChild={handleAddChild}
                                             level={cat?.catLevel}
+                                            isAdmin={isAdmin}
                                         />
                                     );
                                 }}}
@@ -1177,15 +1184,17 @@ export default function ProductCategory() {
                                 />
                             )}
                         </Typography>
-                        <Button 
-                            size="small" 
-                            variant="contained" 
+                        {isAdmin && (
+                        <Button
+                            size="small"
+                            variant="contained"
                             startIcon={<AddIcon />}
                             onClick={handleOpenAddBrandDialog}
                             disabled={!selectedCategoryId}
                         >
                             添加品牌
                         </Button>
+                        )}
                     </Box>
 
                     {/* 品牌表格 */}
@@ -1217,7 +1226,9 @@ export default function ProductCategory() {
                                             <TableCell sx={{ fontWeight: 'bold', width: 70, textAlign: 'center' }}>状态</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', width: 60, textAlign: 'center' }}>排序</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>描述</TableCell>
+                                            {isAdmin && (
                                             <TableCell sx={{ fontWeight: 'bold', width: 90, textAlign: 'center' }}>操作</TableCell>
+                                            )}
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -1251,18 +1262,20 @@ export default function ProductCategory() {
                                                         {brand.descript || '-'}
                                                     </Typography>
                                                 </TableCell>
-                                                <TableCell sx={{ textAlign: 'center' }}>
-                                                    <Tooltip title="编辑">
-                                                        <IconButton size="small" color="primary" onClick={() => handleOpenEditBrandDialog(brand)}>
-                                                            <EditIcon sx={{ fontSize: 18 }} />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="删除">
-                                                        <IconButton size="small" color="error" onClick={() => handleOpenDeleteBrandDialog(brand)}>
-                                                            <DeleteIcon sx={{ fontSize: 18 }} />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </TableCell>
+                                                {isAdmin && (
+                                                    <TableCell sx={{ textAlign: 'center' }}>
+                                                        <Tooltip title="编辑">
+                                                            <IconButton size="small" color="primary" onClick={() => handleOpenEditBrandDialog(brand)}>
+                                                                <EditIcon sx={{ fontSize: 18 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="删除">
+                                                            <IconButton size="small" color="error" onClick={() => handleOpenDeleteBrandDialog(brand)}>
+                                                                <DeleteIcon sx={{ fontSize: 18 }} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </TableCell>
+                                                )}
                                             </TableRow>
                                         ))}
                                     </TableBody>

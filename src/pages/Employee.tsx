@@ -37,6 +37,7 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
 import BadgeIcon from '@mui/icons-material/Badge'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import type { IEmployee, CreateEmployeeForm } from '../types/employee'
+import { useIsAdmin } from '../hooks/useIsAdmin'
 import { getEmployeesApi, createEmployeeApi, updateEmployeeApi, deleteEmployeeApi } from '../api/employee'
 import { getAllDepartmentsApi } from '../api/department'
 import type { IDepartment } from '../types/department'
@@ -85,6 +86,7 @@ export default function Employee(): JSX.Element {
     const [deleteTarget, setDeleteTarget] = useState<IEmployee | null>(null)
     const [deleting, setDeleting] = useState(false)
     const [departments, setDepartments] = useState<IDepartment[]>([])
+    const isAdmin = useIsAdmin()
 
     const fetchData = useCallback(async () => {
         setLoading(true)
@@ -289,6 +291,7 @@ export default function Employee(): JSX.Element {
                         管理系统员工信息和在职状态
                     </Typography>
                 </Box>
+                {isAdmin && (
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -307,6 +310,7 @@ export default function Employee(): JSX.Element {
                 >
                     新建员工
                 </Button>
+                )}
             </Box>
 
             {/* 搜索栏 */}
@@ -396,9 +400,11 @@ export default function Employee(): JSX.Element {
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>角色</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>入职日期</TableCell>
+                                {isAdmin && (
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5, pr: 3 }}>
                                     操作
                                 </TableCell>
+                                )}
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -524,36 +530,38 @@ export default function Employee(): JSX.Element {
                                                     {emp.createTime ? emp.createTime.split(' ')[0] : '—'}
                                                 </Typography>
                                             </TableCell>
-                                            <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
-                                                <Tooltip title="编辑">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => openEditDialog(emp)}
-                                                        sx={{
-                                                            color: '#64748b',
-                                                            '&:hover': {
-                                                                background: 'rgba(100, 116, 139, 0.1)',
-                                                            },
-                                                        }}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                                <Tooltip title="删除">
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => setDeleteTarget(emp)}
-                                                        sx={{
-                                                            color: '#ef4444',
-                                                            '&:hover': {
-                                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                            },
-                                                        }}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </TableCell>
+                                            {isAdmin && (
+                                                <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
+                                                    <Tooltip title="编辑">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => openEditDialog(emp)}
+                                                            sx={{
+                                                                color: '#64748b',
+                                                                '&:hover': {
+                                                                    background: 'rgba(100, 116, 139, 0.1)',
+                                                                },
+                                                            }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title="删除">
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => setDeleteTarget(emp)}
+                                                            sx={{
+                                                                color: '#ef4444',
+                                                                '&:hover': {
+                                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                                },
+                                                            }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     )
                                 })

@@ -31,6 +31,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import GroupsIcon from '@mui/icons-material/Groups'
 import type { IDepartment, CreateDepartmentForm } from '../types/department'
 import { getDepartmentsApi, createDepartmentApi, updateDepartmentApi, deleteDepartmentApi } from '../api/department'
+import { useIsAdmin } from '../hooks/useIsAdmin'
 
 const DEFAULT_FORM: CreateDepartmentForm = {
     deptName: '',
@@ -58,6 +59,7 @@ export default function Department(): JSX.Element {
 
     const [deleteTarget, setDeleteTarget] = useState<IDepartment | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const isAdmin = useIsAdmin()
 
     const fetchData = useCallback(async () => {
         setLoading(true)
@@ -227,6 +229,7 @@ export default function Department(): JSX.Element {
                         管理系统部门信息
                     </Typography>
                 </Box>
+                {isAdmin && (
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -245,6 +248,7 @@ export default function Department(): JSX.Element {
                 >
                     新建部门
                 </Button>
+                )}
             </Box>
 
             {/* Search Bar */}
@@ -326,9 +330,11 @@ export default function Department(): JSX.Element {
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
                                 <TableCell sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
                                 <TableCell sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>备注</TableCell>
+                                {isAdmin && (
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5, pr: 3 }}>
                                     操作
                                 </TableCell>
+                                )}
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -383,36 +389,38 @@ export default function Department(): JSX.Element {
                                                 {dept.remark || '—'}
                                             </Typography>
                                         </TableCell>
-                                        <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
-                                            <Tooltip title="编辑">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => handleOpenEdit(dept)}
-                                                    sx={{
-                                                        color: '#64748b',
-                                                        '&:hover': {
-                                                            background: 'rgba(100, 116, 139, 0.1)',
-                                                        },
-                                                    }}
-                                                >
-                                                    <EditIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="删除">
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={() => setDeleteTarget(dept)}
-                                                    sx={{
-                                                        color: '#ef4444',
-                                                        '&:hover': {
-                                                            background: 'rgba(239, 68, 68, 0.1)',
-                                                        },
-                                                    }}
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </TableCell>
+                                        {isAdmin && (
+                                            <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
+                                                <Tooltip title="编辑">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleOpenEdit(dept)}
+                                                        sx={{
+                                                            color: '#64748b',
+                                                            '&:hover': {
+                                                                background: 'rgba(100, 116, 139, 0.1)',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <EditIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="删除">
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => setDeleteTarget(dept)}
+                                                        sx={{
+                                                            color: '#ef4444',
+                                                            '&:hover': {
+                                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </TableCell>
+                                        )}
                                     </TableRow>
                                 ))
                             )}

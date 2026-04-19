@@ -6,6 +6,7 @@ interface UserInfo {
     realName: string
     avatar: string
     phone: string
+    role: string
     canLogin: number
 }
 
