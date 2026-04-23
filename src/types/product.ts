@@ -12,7 +12,7 @@ export interface Brand {
     brandId: string   // 用 string 避免大数字精度丢失
     name: string
     logo: string
-    descript: string
+    description: string
     showStatus: number
     firstLetter: string
     sort: number
@@ -96,4 +96,45 @@ export interface CategoryParams {
     catLevel: number
     showStatus: number
     sort: number
+}
+
+// 编辑品牌参数
+export interface UpdateBrandParams {
+    name: string
+    logo: string
+    description: string
+    showStatus: number
+    firstLetter: string
+    sort: number
+}
+
+// 添加品牌参数
+export interface AddBrandParams {
+    name: string
+    logo: string
+    description: string
+    showStatus: number
+    firstLetter: string
+    sort: number
+    catId: number        // 关联的三级分类ID
+}
+
+
+// 品牌列表项（与后端返回的 Brand 对应）
+export interface BrandItem {
+    brandId: string
+    name: string
+    logo: string
+    descript: string
+    showStatus: number
+    firstLetter: string
+    sort: number
+    catId?: number
+}
+
+// 编辑分类参数（catId 由 updateCategoryApi 第一参数提供）
+export interface UpdateCategoryParams {
+    name: string
+    sort: number
+    showStatus: number
 }

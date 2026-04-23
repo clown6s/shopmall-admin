@@ -201,7 +201,7 @@ export default function ProductCategory() {
     const [newBrand, setNewBrand] = React.useState({
         name: '',
         logo: '',
-        descript: '',
+        description: '',
         showStatus: true,
         firstLetter: '',
         sort: 0,
@@ -213,7 +213,7 @@ export default function ProductCategory() {
     const [editBrand, setEditBrand] = React.useState({
         name: '',
         logo: '',
-        descript: '',
+        description: '',
         showStatus: true,
         firstLetter: '',
         sort: 0,
@@ -373,7 +373,7 @@ export default function ProductCategory() {
         setNewBrand({
             name: '',
             logo: '',
-            descript: '',
+            description: '',
             showStatus: true,
             firstLetter: '',
             sort: 0,
@@ -400,7 +400,7 @@ export default function ProductCategory() {
             await addBrandApi({
                 name: newBrand.name,
                 logo: newBrand.logo,
-                descript: newBrand.descript,
+                description: newBrand.description,
                 showStatus: newBrand.showStatus ? 1 : 0,
                 firstLetter: newBrand.firstLetter,
                 sort: newBrand.sort,
@@ -424,7 +424,7 @@ export default function ProductCategory() {
         setEditBrand({
             name: brand.name,
             logo: brand.logo,
-            descript: brand.descript,
+            description: brand.description,
             showStatus: brand.showStatus === 1,
             firstLetter: brand.firstLetter,
             sort: brand.sort,
@@ -449,7 +449,7 @@ export default function ProductCategory() {
             await updateBrandApi(editingBrand.brandId, {
                 name: editBrand.name,
                 logo: editBrand.logo,
-                descript: editBrand.descript,
+                description: editBrand.description,
                 showStatus: editBrand.showStatus ? 1 : 0,
                 firstLetter: editBrand.firstLetter,
                 sort: editBrand.sort,
@@ -545,7 +545,7 @@ export default function ProductCategory() {
         setBrandsLoading(true);
         try {
             const res = await getBrandsByCategoryApi(catId);
-            setBrands(res.data.data || []);
+            setBrands(res.data || []);
         } catch (err) {
             console.error('加载品牌失败:', err);
             setBrands([]);
@@ -794,7 +794,7 @@ export default function ProductCategory() {
                                 {newBrand.name || '品牌名称'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {newBrand.descript || '暂无描述'}
+                                {newBrand.description || '暂无描述'}
                             </Typography>
                         </Box>
                         {newBrand.firstLetter && (
@@ -860,8 +860,8 @@ export default function ProductCategory() {
 
                     <TextField
                         label="品牌描述"
-                        value={newBrand.descript}
-                        onChange={(e) => setNewBrand({ ...newBrand, descript: e.target.value })}
+                        value={newBrand.description}
+                        onChange={(e) => setNewBrand({ ...newBrand, description: e.target.value })}
                         size="small"
                         placeholder="输入品牌描述"
                         multiline
@@ -928,7 +928,7 @@ export default function ProductCategory() {
                                 {editBrand.name || '品牌名称'}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                {editBrand.descript || '暂无描述'}
+                                {editBrand.description || '暂无描述'}
                             </Typography>
                         </Box>
                         {editBrand.firstLetter && (
@@ -988,8 +988,8 @@ export default function ProductCategory() {
 
                     <TextField
                         label="品牌描述"
-                        value={editBrand.descript}
-                        onChange={(e) => setEditBrand({ ...editBrand, descript: e.target.value })}
+                        value={editBrand.description}
+                        onChange={(e) => setEditBrand({ ...editBrand, description: e.target.value })}
                         size="small"
                         placeholder="输入品牌描述"
                         multiline
@@ -1203,8 +1203,8 @@ export default function ProductCategory() {
                                                 </TableCell>
                                                 <TableCell sx={{ textAlign: 'center' }}>{brand.sort}</TableCell>
                                                 <TableCell sx={{ textAlign: 'center' }}>
-                                                    <Typography variant="body2" noWrap title={brand.descript}>
-                                                        {brand.descript || '-'}
+                                                    <Typography variant="body2" noWrap title={brand.description}>
+                                                        {brand.description || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 {isAdmin && (
