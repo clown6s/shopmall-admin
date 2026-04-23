@@ -1,30 +1,36 @@
 // src/types/employee.ts
 
-export interface LoginResp {
-    employeeId: string
-    token: string
-    phone: string
+export interface EmployeeInfo {
+    id: number
     realName: string
+    phone: string
     avatar: string
+    gender: number
+    department: string
+    position: string
     role: string
-    canLogin: number
+}
+
+export interface LoginResp {
+    token: string
+    employeeInfo: EmployeeInfo
 }
 
 export interface IEmployee {
-    employeeId: string
+    id: number
     realName: string
     avatar: string
     gender: number
-    age: number
+    age?: number
     phone: string
-    email: string
+    email?: string
     department: string
     position: string
     role: string
     workStatus: number
     canLogin: number
-    remark: string
-    createTime: string
+    remark?: string
+    createTime?: string
 }
 
 export interface CreateEmployeeForm {

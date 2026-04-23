@@ -58,36 +58,33 @@ export const EMPLOYEES_DATASET: TreeViewDefaultItemModelProperties[] = [
     },
 ];
 
-// 后端 CascaderNode 类型（商品分类树节点）
+// 后端分类树节点（与实际返回数据匹配）
 export interface CategoryTreeNode {
     catId: number
     name: string
-    parentCid: number
-    catLevel: number
-    showStatus: number
-    sort: number
-    icon: string
-    productUnit: string
-    productCount: number
+    sort?: number
+    showStatus?: number
     children?: CategoryTreeNode[]
 }
 
-// 商品分类树项类型（保留 catLevel 和 parentCid）
+// MUI TreeView 需要的类型（只需 id, label, children）
 export interface CategoryTreeItem {
     id: string
     label: string
-    catLevel: number
-    parentCid: number
+    sort?: number
+    showStatus?: number
+    catLevel?: number
+    parentCid?: number
     children?: CategoryTreeItem[]
 }
 
-// 转换为 MUI TreeView 格式（保留 catLevel 和 parentCid 用于判断）
+// 转换为 MUI TreeView 格式
 export function toTreeViewItems(nodes: CategoryTreeNode[]): CategoryTreeItem[] {
     return nodes.map((node) => ({
         id: String(node.catId),
         label: node.name,
-        catLevel: node.catLevel,
-        parentCid: node.parentCid,
+        sort: node.sort,
+        showStatus: node.showStatus,
         children: node.children && node.children.length > 0 ? toTreeViewItems(node.children) : undefined,
     }))
 }
@@ -99,6 +96,4 @@ export interface CategoryParams {
     catLevel: number
     showStatus: number
     sort: number
-    icon: string
-    productUnit: string
 }

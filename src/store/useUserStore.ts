@@ -2,12 +2,14 @@
 import { create } from "zustand";
 
 interface UserInfo {
-    employeeId: string
+    id: number
     realName: string
     avatar: string
     phone: string
     role: string
-    canLogin: number
+    gender: number
+    department: string
+    position: string
 }
 
 interface UserState {

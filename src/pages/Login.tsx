@@ -15,6 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useUserStore from '../store/useUserStore'
 import { loginApi } from '../api/employee'
+import type { EmployeeInfo } from '../types/employee'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -41,9 +42,10 @@ export default function Login(): JSX.Element {
         try {
             setLoading(true)
             const res = await loginApi(mobile, password)
-            const { token, employeeId, realName, avatar, phone, role, canLogin } = res.data.data
+            const { token, employeeInfo } = res.data as unknown as { token: string; employeeInfo: EmployeeInfo }
+            const { id, realName, avatar, phone, role, gender, department, position } = employeeInfo
             setToken(token)
-            setUserInfo({ employeeId, realName, avatar, phone, role, canLogin })
+            setUserInfo({ id, realName, avatar, phone, role, gender, department, position })
             navigate('/', { replace: true })
         } catch (err: unknown) {
             const msg =

@@ -48,14 +48,15 @@ interface FlattenCategory {
     parentCid: number;
 }
 const flattenCategories = (
-    items: CategoryTreeItem[],
-    level = 0
+    items: readonly CategoryTreeItem[],
+    level = 0,
+    parentId = 0
 ): FlattenCategory[] => {
     let result: FlattenCategory[] = [];
     for (const item of items) {
-        result.push({ id: item.id, name: item.label as string, level, catLevel: item.catLevel, parentCid: item.parentCid });
+        result.push({ id: item.id, name: item.label as string, level, catLevel: level + 1, parentCid: parentId });
         if (item.children && item.children.length > 0) {
-            result = result.concat(flattenCategories(item.children, level + 1));
+            result = result.concat(flattenCategories(item.children, level + 1, Number(item.id)));
         }
     }
     return result;
@@ -158,7 +159,7 @@ const CustomTreeItem = React.forwardRef<HTMLLIElement, React.ComponentProps<type
 
 export default function ProductCategory() {
     const containerRef = React.useRef<HTMLDivElement>(null);
-    const [items, setItems] = React.useState<CategoryTreeItem[]>([]);
+    const [items, setItems] = React.useState<readonly CategoryTreeItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
@@ -177,8 +178,6 @@ export default function ProductCategory() {
         catLevel: 1,
         showStatus: true,
         sort: 0,
-        icon: '',
-        productUnit: '',
     });
 
     // 实时计算扁平化分类，用于树节点显示和下拉选择
@@ -189,8 +188,6 @@ export default function ProductCategory() {
         catLevel: 1,
         showStatus: true,
         sort: 0,
-        icon: '',
-        productUnit: '',
     });
 
     // 当前选中的分类ID（用于加载品牌）
@@ -250,8 +247,6 @@ export default function ProductCategory() {
                 catLevel: Math.min(parentLevel, 3),
                 showStatus: true,
                 sort: 0,
-                icon: '',
-                productUnit: '',
             });
         } else {
             // 无父分类，顶级分类
@@ -261,8 +256,6 @@ export default function ProductCategory() {
                 catLevel: 1,
                 showStatus: true,
                 sort: 0,
-                icon: '',
-                productUnit: '',
             });
         }
         setAddDialogOpen(true);
@@ -289,15 +282,12 @@ export default function ProductCategory() {
         try {
             await updateCategoryApi(editingId, {
                 name: editCategory.name,
-                parentCid: editCategory.parentCid, // 保留原有父级
                 showStatus: editCategory.showStatus ? 1 : 0,
                 sort: editCategory.sort,
-                icon: editCategory.icon,
-                productUnit: editCategory.productUnit,
             });
             // 刷新列表
             const res = await getProductCategoryTreeApi();
-            setItems(toTreeViewItems(res.data.data || []));
+            setItems(toTreeViewItems(res.data || []));
             showSnackbar('修改成功', 'success');
             setEditDialogOpen(false);
         } catch (err) {
@@ -325,12 +315,10 @@ export default function ProductCategory() {
                 catLevel: newCategory.catLevel,
                 showStatus: newCategory.showStatus ? 1 : 0,
                 sort: newCategory.sort,
-                icon: newCategory.icon,
-                productUnit: newCategory.productUnit,
             });
             // 刷新列表
             const res = await getProductCategoryTreeApi();
-            setItems(toTreeViewItems(res.data.data || []));
+            setItems(toTreeViewItems(res.data || []));
             showSnackbar('添加成功', 'success');
             handleCloseAddDialog();
         } catch (err) {
@@ -345,7 +333,7 @@ export default function ProductCategory() {
         if (!cat) return;
         
         // 从原始树数据中查找完整信息
-        const findCategoryById = (nodes: CategoryTreeItem[], targetId: string): CategoryTreeItem | null => {
+        const findCategoryById = (nodes: readonly CategoryTreeItem[], targetId: string): CategoryTreeItem | null => {
             for (const node of nodes) {
                 if (node.id === targetId) return node;
                 if (node.children) {
@@ -363,10 +351,8 @@ export default function ProductCategory() {
                 name: category.label as string,
                 parentCid: cat.parentCid, // 保留原有父级
                 catLevel: cat.catLevel,   // 保留原有层级
-                showStatus: true,
-                sort: 0,
-                icon: '',
-                productUnit: '',
+                showStatus: Boolean(category.showStatus),
+                sort: category.sort ?? 0,
             });
             setEditDialogOpen(true);
         }
@@ -515,7 +501,7 @@ export default function ProductCategory() {
         try {
             await deleteCategoryApi(deletingId);
             const res = await getProductCategoryTreeApi();
-            setItems(toTreeViewItems(res.data.data || []));
+            setItems(toTreeViewItems(res.data || []));
             showSnackbar('删除成功', 'success');
             // 如果删除的是当前选中的分类，清空品牌列表
             if (String(deletingId) === selectedCategoryId) {
@@ -575,7 +561,7 @@ export default function ProductCategory() {
                 setLoading(true);
                 setError(null);
                 const res = await getProductCategoryTreeApi();
-                setItems(toTreeViewItems(res.data.data || []));
+                setItems(toTreeViewItems(res.data || []));
             } catch (err) {
                 console.error('加载分类失败:', err);
                 setError('加载分类数据失败，请重试');
@@ -658,33 +644,18 @@ export default function ProductCategory() {
                             slotProps={{ input: { inputProps: { min: 0 } } }}
                         />
 
-                        <TextField
-                            label="计量单位"
-                            value={newCategory.productUnit}
-                            onChange={(e) => setNewCategory({ ...newCategory, productUnit: e.target.value })}
-                            placeholder="件、个、箱"
-                            sx={{ flex: 1 }}
-                            size="small"
+                        <FormControlLabel
+                            sx={{flex:1}}
+                            control={
+                                <Switch
+                                    checked={newCategory.showStatus}
+                                    onChange={(e) => setNewCategory({ ...newCategory, showStatus: e.target.checked })}
+                                />
+                            }
+                            label={newCategory.showStatus ? '✅ 显示' : '❌ 隐藏'}
                         />
+
                     </Box>
-
-                    <TextField
-                        label="图标地址"
-                        value={newCategory.icon}
-                        onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                        size="small"
-                        placeholder="输入图标URL"
-                    />
-
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                checked={newCategory.showStatus}
-                                onChange={(e) => setNewCategory({ ...newCategory, showStatus: e.target.checked })}
-                            />
-                        }
-                        label={newCategory.showStatus ? '✅ 显示' : '❌ 隐藏'}
-                    />
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={handleCloseAddDialog}>取消</Button>
@@ -761,35 +732,8 @@ export default function ProductCategory() {
                             slotProps={{ input: { inputProps: { min: 0 } } }}
                         />
 
-                        <TextField
-                            label="计量单位"
-                            value={editCategory.productUnit}
-                            onChange={(e) => setEditCategory({ ...editCategory, productUnit: e.target.value })}
-                            placeholder="件、个、箱"
-                            sx={{ flex: 1 }}
-                            size="small"
-                        />
-                    </Box>
-
-                    <TextField
-                        label="图标地址"
-                        value={editCategory.icon}
-                        onChange={(e) => setEditCategory({ ...editCategory, icon: e.target.value })}
-                        size="small"
-                        placeholder="输入图标URL"
-                        slotProps={{
-                            input: {
-                                startAdornment: editCategory.icon ? (
-                                    <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
-                                        <img src={editCategory.icon} alt="icon" height={20} style={{ borderRadius: 4 }} />
-                                    </Box>
-                                ) : null
-                            }
-                        }}
-                    />
-
-                    <Paper variant="outlined" sx={{ p: 1.5 }}>
                         <FormControlLabel
+                            sx={{flex:1}}
                             control={
                                 <Switch
                                     checked={editCategory.showStatus}
@@ -807,7 +751,8 @@ export default function ProductCategory() {
                                 </Typography>
                             }
                         />
-                    </Paper>
+
+                    </Box>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
                     <Button onClick={handleCloseEditDialog}>取消</Button>

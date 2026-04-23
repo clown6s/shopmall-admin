@@ -66,8 +66,9 @@ export default function Department(): JSX.Element {
         setError('')
         try {
             const res = await getDepartmentsApi({ page, pageSize, deptName: search || undefined })
-            setList(res.data.data.list)
-            setTotal(res.data.data.total)
+            const { list, total } = res.data as unknown as { list: IDepartment[]; total: number }
+            setList(list)
+            setTotal(total)
         } catch {
             setError('获取部门列表失败')
         } finally {

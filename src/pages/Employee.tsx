@@ -98,8 +98,9 @@ export default function Employee(): JSX.Element {
                 realName: filters.realName || undefined,
                 phone: filters.phone || undefined,
             })
-            setList(res.data.data.list)
-            setTotal(res.data.data.total)
+            const { list, total } = res.data as unknown as { list: IEmployee[]; total: number }
+            setList(list)
+            setTotal(total)
         } catch {
             setError('获取员工列表失败')
         } finally {
@@ -125,7 +126,7 @@ export default function Employee(): JSX.Element {
         if (!deleteTarget) return
         try {
             setDeleting(true)
-            await deleteEmployeeApi(deleteTarget.employeeId)
+            await deleteEmployeeApi(deleteTarget.id)
             setDeleteTarget(null)
             fetchData()
         } catch {
@@ -260,7 +261,7 @@ export default function Employee(): JSX.Element {
         if (!currentEmployee || !validateForm()) return
         try {
             setSubmitting(true)
-            await updateEmployeeApi(currentEmployee.employeeId, form)
+            await updateEmployeeApi(currentEmployee.id, form)
             setOpenEdit(false)
             setCurrentEmployee(null)
             fetchData()
@@ -435,7 +436,7 @@ export default function Employee(): JSX.Element {
                                         emp.department
                                     return (
                                         <TableRow
-                                            key={emp.employeeId}
+                                            key={emp.id}
                                             hover
                                             sx={{
                                                 '&:hover': { background: '#f8fafc' },
@@ -468,7 +469,7 @@ export default function Employee(): JSX.Element {
                                                             {emp.realName}
                                                         </Typography>
                                                         <Typography variant="caption" color="text.secondary">
-                                                            ID: {emp.employeeId}
+                                                            ID: {emp.id}
                                                         </Typography>
                                                     </Box>
                                                 </Box>
@@ -525,9 +526,9 @@ export default function Employee(): JSX.Element {
                                                     sx={{ height: 24, fontWeight: 500, '& .MuiChip-label': { px: 1 } }}
                                                 />
                                             </TableCell>
-                                            <TableCell sx={{ py: 1.5 }}>
+                                            <TableCell sx={{ py: 1.5,textAlign: 'center' }}>
                                                 <Typography variant="body2">
-                                                    {emp.createTime ? emp.createTime.split(' ')[0] : '—'}
+                                                    {emp.createTime ? emp.createTime.split('T')[0] : '—'}
                                                 </Typography>
                                             </TableCell>
                                             {isAdmin && (
@@ -741,7 +742,7 @@ export default function Employee(): JSX.Element {
                 <DialogTitle sx={{ fontWeight: 700 }}>确认删除</DialogTitle>
                 <DialogContent>
                     <Typography color="text.secondary">
-                        确定要删除员工 <strong>{deleteTarget?.realName}</strong>（ID: {deleteTarget?.employeeId}）吗？
+                        确定要删除员工 <strong>{deleteTarget?.realName}</strong>（ID: {deleteTarget?.id}）吗？
                         <br />
                         此操作不可撤销。
                     </Typography>

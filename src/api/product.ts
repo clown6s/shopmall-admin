@@ -3,14 +3,15 @@ import request from './request'
 import type { ApiResponse } from '../types/api'
 import type {CategoryTreeNode, Brand,CategoryParams} from '../types/product'
 
-// 获取商品三级分类树
+// 获取商品三级分类树（后端返回纯数组）
 export const getProductCategoryTreeApi = () =>
-    request.get<ApiResponse<CategoryTreeNode[]>>('/product/reclassify')
+    request.get<CategoryTreeNode[]>('/product/category')
 
 // 获取指定分类关联的品牌列表
 export const getBrandsByCategoryApi = (catId: string) =>
     request.get<ApiResponse<Brand[]>>('/product/brands', { params: { catId } })
 
+// 删除分类（逻辑删除）
 export const deleteCategoryApi = (catId: string) =>
     request.delete<ApiResponse<void>>(`/product/category/${catId}`)
 
@@ -18,9 +19,16 @@ export const deleteCategoryApi = (catId: string) =>
 export const addCategoryApi = (data: CategoryParams) =>
     request.post<ApiResponse<void>>('/product/category', data)
 
+// 编辑分类参数（catId 由 updateCategoryApi 第一参数提供）
+export interface UpdateCategoryParams {
+    name: string
+    sort: number
+    showStatus: number
+}
+
 // 修改分类
-export const updateCategoryApi = (catId: string, data: Omit<CategoryParams, 'catLevel'>) =>
-    request.put<ApiResponse<void>>(`/product/category/${catId}`, data)
+export const updateCategoryApi = (catId: string, data: UpdateCategoryParams) =>
+    request.put<ApiResponse<void>>('/product/category', { catId: Number(catId), ...data })
 
 // 添加品牌参数
 export interface AddBrandParams {

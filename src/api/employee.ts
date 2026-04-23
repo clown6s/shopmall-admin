@@ -20,18 +20,18 @@ export const getEmployeesApi = (params: {
     phone?: string
 }) =>
     request.get<ApiResponse<{ list: IEmployee[]; total: number; page: number; pageSize: number }>>(
-        '/employee',
+        '/employee/list',
         { params }
     )
 
-export const getEmployeeApi = (id: string) =>
+export const getEmployeeApi = (id: number) =>
     request.get<ApiResponse<IEmployee>>(`/employee/${id}`)
 
 export const createEmployeeApi = (data: CreateEmployeeForm) =>
     request.post<ApiResponse<IEmployee>>('/employee', data)
 
-export const updateEmployeeApi = (id: string, data: CreateEmployeeForm) =>
+export const updateEmployeeApi = (id: number, data: CreateEmployeeForm) =>
     request.put<ApiResponse<IEmployee>>(`/employee/${id}`, data)
 
-export const deleteEmployeeApi = (id: string) =>
+export const deleteEmployeeApi = (id: number) =>
     request.delete<ApiResponse<null>>(`/employee/${id}`)

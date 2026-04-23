@@ -30,14 +30,28 @@ service.interceptors.request.use((config) => {
 
 // 响应拦截器：统一处理 401 + 后端业务错误
 service.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse<unknown>>) => {
-        // 检查后端返回的业务 code，非 200 视为错误
-        if (response.data.code !== 200) {
-            const error = new Error(response.data.message || '请求失败') as AxiosError<ApiResponse<unknown>>
-            error.response = response
-            error.config = response.config
-            return Promise.reject(error)
+    (response: AxiosResponse) => {
+        const data = response.data
+
+        // 如果返回的是纯数组（无 code 字段），直接返回整个 response
+        if (Array.isArray(data)) {
+            return response
         }
+
+        // 包装格式 { code, message, data }
+        const r = data as ApiResponse<unknown>
+        if (r.code !== undefined && r.data !== undefined) {
+            // 检查后端返回的业务 code，非 200 视为错误
+            if (r.code !== 200) {
+                const error = new Error(r.message || '请求失败') as AxiosError<ApiResponse<unknown>>
+                error.response = response
+                error.config = response.config
+                return Promise.reject(error)
+            }
+            // 自动提取 data 字段，让 res.data 直接是业务数据
+            return { ...response, data: r.data }
+        }
+
         return response
     },
     (error: AxiosError<ApiResponse<unknown>>) => {
