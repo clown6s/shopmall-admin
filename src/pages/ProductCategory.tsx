@@ -35,7 +35,7 @@ import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
 import * as React from "react";
-import { toTreeViewItems, type CategoryTreeItem, type Brand } from "../types/product.ts";
+import { toTreeViewItems, type CategoryTreeItem, type Brand, toShowStatus, fromShowStatus } from "../types/product.ts";
 import {getProductCategoryTreeApi, deleteCategoryApi, addCategoryApi, updateCategoryApi, getBrandsByCategoryApi, addBrandApi, updateBrandApi, deleteBrandApi} from "../api/product.ts";
 import { useIsAdmin } from "../hooks/useIsAdmin";
 
@@ -282,10 +282,10 @@ export default function ProductCategory() {
         try {
             await updateCategoryApi(editingId, {
                 name: editCategory.name,
-                showStatus: editCategory.showStatus ? 1 : 0,
+                showStatus: toShowStatus(editCategory.showStatus),
                 sort: editCategory.sort,
             });
-            // 刷新列表
+            // 刷新列表（保持树展开状态）
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data || []));
             showSnackbar('修改成功', 'success');
@@ -313,10 +313,10 @@ export default function ProductCategory() {
                 name: newCategory.name,
                 parentCid: newCategory.parentCid,
                 catLevel: newCategory.catLevel,
-                showStatus: newCategory.showStatus ? 1 : 0,
+                showStatus: toShowStatus(newCategory.showStatus),
                 sort: newCategory.sort,
             });
-            // 刷新列表
+            // 刷新列表（保持树展开状态）
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data || []));
             showSnackbar('添加成功', 'success');
@@ -351,7 +351,7 @@ export default function ProductCategory() {
                 name: category.label as string,
                 parentCid: cat.parentCid, // 保留原有父级
                 catLevel: cat.catLevel,   // 保留原有层级
-                showStatus: Boolean(category.showStatus),
+                showStatus: fromShowStatus(category.showStatus ?? 2),
                 sort: category.sort ?? 0,
             });
             setEditDialogOpen(true);
@@ -401,7 +401,7 @@ export default function ProductCategory() {
                 name: newBrand.name,
                 logo: newBrand.logo,
                 description: newBrand.description,
-                showStatus: newBrand.showStatus ? 1 : 0,
+                showStatus: toShowStatus(newBrand.showStatus),
                 firstLetter: newBrand.firstLetter,
                 sort: newBrand.sort,
                 catId: Number(selectedCategoryId),
@@ -425,7 +425,7 @@ export default function ProductCategory() {
             name: brand.name,
             logo: brand.logo,
             description: brand.description,
-            showStatus: brand.showStatus === 1,
+            showStatus: fromShowStatus(brand.showStatus),
             firstLetter: brand.firstLetter,
             sort: brand.sort,
         });
@@ -450,7 +450,7 @@ export default function ProductCategory() {
                 name: editBrand.name,
                 logo: editBrand.logo,
                 description: editBrand.description,
-                showStatus: editBrand.showStatus ? 1 : 0,
+                showStatus: toShowStatus(editBrand.showStatus),
                 firstLetter: editBrand.firstLetter,
                 sort: editBrand.sort,
             });
@@ -500,6 +500,7 @@ export default function ProductCategory() {
         if (!deletingId) return;
         try {
             await deleteCategoryApi(deletingId);
+            // 刷新列表（保持树展开状态）
             const res = await getProductCategoryTreeApi();
             setItems(toTreeViewItems(res.data || []));
             showSnackbar('删除成功', 'success');
@@ -1195,7 +1196,7 @@ export default function ProductCategory() {
                                                     <Chip label={brand.firstLetter || '-'} size="small" variant="outlined" />
                                                 </TableCell>
                                                 <TableCell sx={{ textAlign: 'center' }}>
-                                                    {brand.showStatus === 1 ? (
+                                                    {fromShowStatus(brand.showStatus) ? (
                                                         <Chip label="显示" size="small" color="success" variant="filled" />
                                                     ) : (
                                                         <Chip label="隐藏" size="small" color="default" variant="outlined" />

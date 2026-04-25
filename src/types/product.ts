@@ -1,5 +1,17 @@
 import type {TreeViewDefaultItemModelProperties} from '@mui/x-tree-view/models';
 
+// 显示状态映射：1=显示，2=隐藏（与后端一致）
+export const SHOW_STATUS = {
+    SHOWN: 1 as const,
+    HIDDEN: 2 as const,
+}
+
+// boolean 转后端状态
+export const toShowStatus = (shown: boolean): number => shown ? SHOW_STATUS.SHOWN : SHOW_STATUS.HIDDEN
+
+// 后端状态转 boolean
+export const fromShowStatus = (status: number): boolean => status === SHOW_STATUS.SHOWN
+
 // 商品类型
 export interface IProduct {
     id: number
