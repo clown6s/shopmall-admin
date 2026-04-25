@@ -29,6 +29,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import GroupsIcon from '@mui/icons-material/Groups'
+import CloseIcon from '@mui/icons-material/Close'
 import type { IDepartment, CreateDepartmentForm } from '../types/department'
 import { getDepartmentsApi, createDepartmentApi, updateDepartmentApi, deleteDepartmentApi } from '../api/department'
 import { useIsAdmin } from '../hooks/useIsAdmin'
@@ -44,9 +45,8 @@ export default function Department(): JSX.Element {
     const [list, setList] = useState<IDepartment[]>([])
     const [total, setTotal] = useState(0)
     const [page, setPage] = useState(1)
-    const [pageSize] = useState(10)
+    const [pageSize, setPageSize] = useState(10)
     const [search, setSearch] = useState('')
-    const [searchInput, setSearchInput] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
@@ -76,14 +76,19 @@ export default function Department(): JSX.Element {
         }
     }, [page, pageSize, search])
 
+    // 搜索变化时重置页码
+    useEffect(() => {
+        setPage(1)
+    }, [search])
+
+    const handlePageSizeChange = (val: number) => {
+        setPageSize(val)
+        setPage(1)
+    }
+
     useEffect(() => {
         fetchData()
     }, [fetchData])
-
-    const handleSearch = () => {
-        setSearch(searchInput)
-        setPage(1)
-    }
 
     const handleCreate = async () => {
         setFormError('')
@@ -96,7 +101,7 @@ export default function Department(): JSX.Element {
             await createDepartmentApi(form)
             setOpenCreate(false)
             setForm({ ...DEFAULT_FORM })
-            fetchData()
+            await fetchData()
         } catch (err: unknown) {
             setFormError(getErrorMsg(err, '创建失败'))
         } finally {
@@ -116,7 +121,7 @@ export default function Department(): JSX.Element {
             await updateDepartmentApi(currentDepartment.deptId, form)
             setOpenEdit(false)
             setCurrentDepartment(null)
-            fetchData()
+            await fetchData()
         } catch (err: unknown) {
             setFormError(getErrorMsg(err, '更新失败'))
         } finally {
@@ -267,9 +272,8 @@ export default function Department(): JSX.Element {
                     <TextField
                         size="small"
                         placeholder="按部门名称搜索..."
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
                             input: {
                                 startAdornment: (
@@ -277,33 +281,24 @@ export default function Department(): JSX.Element {
                                         <SearchIcon fontSize="small" sx={{ color: 'text.secondary' }} />
                                     </InputAdornment>
                                 ),
+                                endAdornment: search ? (
+                                    <InputAdornment position="end">
+                                        <IconButton size="small" onClick={() => setSearch('')}>
+                                            <CloseIcon fontSize="small" />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ) : null,
                             },
                         }}
                         sx={{
                             flex: 1,
+                            maxWidth: 320,
                             '& .MuiOutlinedInput-root': {
                                 borderRadius: '12px',
                                 background: '#f8fafc',
                             },
                         }}
                     />
-                    <Button
-                        variant="outlined"
-                        onClick={handleSearch}
-                        sx={{
-                            borderRadius: '12px',
-                            px: 3,
-                            borderColor: '#e2e8f0',
-                            color: '#64748b',
-                            '&:hover': {
-                                borderColor: '#667eea',
-                                color: '#667eea',
-                                background: 'rgba(102, 126, 234, 0.05)',
-                            },
-                        }}
-                    >
-                        搜索
-                    </Button>
                 </Box>
             </Paper>
 
@@ -326,13 +321,13 @@ export default function Department(): JSX.Element {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ background: '#f8fafc' }}>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b', pl: 3, py: 1.5 }}>部门名称</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>部门名称</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>排序</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
-                                <TableCell sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>备注</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>备注</TableCell>
                                 {isAdmin && (
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5, pr: 3 }}>
+                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>
                                     操作
                                 </TableCell>
                                 )}
@@ -345,7 +340,7 @@ export default function Department(): JSX.Element {
                                         <CircularProgress size={32} sx={{ color: '#667eea' }} />
                                     </TableCell>
                                 </TableRow>
-                            ) : list.length === 0 ? (
+                            ) : !list || list.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={6} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                                         <Box sx={{ textAlign: 'center' }}>
@@ -364,7 +359,7 @@ export default function Department(): JSX.Element {
                                             transition: 'background 0.2s ease',
                                         }}
                                     >
-                                        <TableCell sx={{ pl: 3, py: 1.5 }}>
+                                        <TableCell align="center" sx={{ py: 1.5 }}>
                                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                 {dept.deptName}
                                             </Typography>
@@ -380,12 +375,12 @@ export default function Department(): JSX.Element {
                                                 sx={{ height: 24, fontWeight: 500, '& .MuiChip-label': { px: 1 } }}
                                             />
                                         </TableCell>
-                                        <TableCell sx={{ py: 1.5 }}>
+                                        <TableCell align="center" sx={{ py: 1.5 }}>
                                             <Typography variant="body2">
-                                                {dept.createTime ? dept.createTime.split(' ')[0] : '—'}
+                                                {dept.createTime ? dept.createTime.split('T')[0] : '—'}
                                             </Typography>
                                         </TableCell>
-                                        <TableCell sx={{ py: 1.5 }}>
+                                        <TableCell align="center" sx={{ py: 1.5 }}>
                                             <Typography variant="body2" color="text.secondary">
                                                 {dept.remark || '—'}
                                             </Typography>
@@ -429,26 +424,51 @@ export default function Department(): JSX.Element {
                     </Table>
                 </TableContainer>
 
-                {/* Pagination */}
-                {total > pageSize && (
+                {/* 分页器 */}
+                {total > 0 && (
                     <Box
                         sx={{
                             display: 'flex',
-                            justifyContent: 'flex-end',
-                            p: 2,
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            px: 2,
+                            py: 2.5,
                             borderTop: '1px solid #e2e8f0',
+                            flexShrink: 0,
                         }}
                     >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                每页
+                            </Typography>
+                            <TextField
+                                size="small"
+                                select
+                                value={pageSize}
+                                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                slotProps={{ select: { native: true } }}
+                                sx={{
+                                    width: 80,
+                                    '& .MuiOutlinedInput-root': { borderRadius: '8px' },
+                                }}
+                            >
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </TextField>
+                            <Typography variant="body2" color="text.secondary">
+                                条，共 {total} 条
+                            </Typography>
+                        </Box>
                         <Pagination
                             count={Math.ceil(total / pageSize)}
                             page={page}
                             onChange={(_, v) => setPage(v)}
-                            color="primary"
                             shape="rounded"
+                            size="small"
                             sx={{
-                                '& .MuiPaginationItem-root': {
-                                    borderRadius: '10px',
-                                },
+                                '& .MuiPaginationItem-root': { borderRadius: '10px' },
                             }}
                         />
                     </Box>

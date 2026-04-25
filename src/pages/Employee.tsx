@@ -141,9 +141,10 @@ export default function Employee(): JSX.Element {
     const fetchDepartments = useCallback(async () => {
         try {
             const res = await getAllDepartmentsApi()
-            setDepartments(res.data.data)
+            const deptData = res.data.data ?? res.data
+            setDepartments(Array.isArray(deptData) ? deptData : [])
         } catch {
-            // ignore
+            setDepartments([])
         }
     }, [])
 
@@ -429,10 +430,10 @@ export default function Employee(): JSX.Element {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                list.map((emp) => {
+                                (list || []).map((emp) => {
                                     const g = GENDER_MAP[emp.gender] ?? GENDER_MAP[3]
                                     const deptName =
-                                        departments.find((d) => String(d.deptId) === emp.department)?.deptName ||
+                                        (departments || []).find((d) => String(d.deptId) === emp.department)?.deptName ||
                                         emp.department
                                     return (
                                         <TableRow
@@ -656,7 +657,7 @@ export default function Employee(): JSX.Element {
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField label="部门 *" select value={form.department ?? ''} onChange={(e) => setForm({ ...form, department: e.target.value })} slotProps={{ select: { native: true } }} {...fieldProps}>
                                 <option value=""></option>
-                                {departments.map((d) => (
+                                {(departments || []).map((d) => (
                                     <option key={d.deptId} value={String(d.deptId)}>{d.deptName}</option>
                                 ))}
                             </TextField>
