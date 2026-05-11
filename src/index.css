@@ -88,23 +88,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-elevated: #1e293b;
-    
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-tertiary: #64748b;
-    
-    --border-light: #334155;
-    --border-default: #475569;
-  }
-}
-
 /* Reset & Base */
 *, *::before, *::after {
   box-sizing: border-box;

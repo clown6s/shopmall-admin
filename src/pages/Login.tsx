@@ -13,18 +13,28 @@ import {
     Divider,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import useUserStore from '../store/useUserStore'
 import { loginApi } from '../api/employee'
-import type { EmployeeInfo } from '../types/employee'
+import type { EmployeeInfo, LoginResp } from '../types/employee'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined'
 import StorefrontIcon from '@mui/icons-material/Storefront'
+import { isValidPhone } from '../utils/validators'
+
+/** 运行时校验 EmployeeInfo 结构完整性 */
+function isEmployeeInfo(data: unknown): data is EmployeeInfo {
+    if (!data || typeof data !== 'object') return false
+    const info = data as Record<string, unknown>
+    return (
+        typeof info.id === 'number' &&
+        typeof info.realName === 'string' &&
+        typeof info.phone === 'string' &&
+        typeof info.role === 'string'
+    )
+}
 
 export default function Login(): JSX.Element {
-    const setToken = useUserStore((state) => state.setToken)
-    const setUserInfo = useUserStore((state) => state.setUserInfo)
     const navigate = useNavigate()
 
     const [mobile, setPhone] = useState('')
@@ -39,14 +49,24 @@ export default function Login(): JSX.Element {
             setError('手机号和密码不能为空')
             return
         }
+        if (!isValidPhone(mobile)) {
+            setError('手机号格式不正确')
+            return
+        }
         try {
             setLoading(true)
+            // 注意：request.ts 响应拦截器已自动解包 { code, data }
+            // res.data 直接就是 LoginResp（内层 data），不再有 code 字段
             const res = await loginApi(mobile, password)
-            const { token, employeeInfo } = res.data as unknown as { token: string; employeeInfo: EmployeeInfo }
-            const { id, realName, avatar, phone, role, gender, department, position } = employeeInfo
-            setToken(token)
-            setUserInfo({ id, realName, avatar, phone, role, gender, department, position })
-            navigate('/', { replace: true })
+            const loginData = res.data as LoginResp
+            if (isEmployeeInfo(loginData?.employeeInfo)) {
+                // 登录成功，直接导航，让 RequireAuth 统一处理用户信息加载
+                navigate('/', { replace: true })
+            } else {
+                // 后端返回了非 200 的 code，拦截器会抛错走 catch
+                // 如果走到这里说明 data 结构异常
+                setError('登录响应异常，请联系管理员')
+            }
         } catch (err: unknown) {
             const msg =
                 (err as { response?: { data?: { message?: string } } })
@@ -183,6 +203,7 @@ export default function Login(): JSX.Element {
                         onChange={(e) => setPassword(e.target.value)}
                         onKeyDown={handleKeyDown}
                         slotProps={{
+                            htmlInput: { autoComplete: 'current-password' },
                             input: {
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -241,9 +262,13 @@ export default function Login(): JSX.Element {
                                 boxShadow: 'none',
                             },
                         }}
+                        aria-busy={loading}
                     >
                         {loading ? (
-                            <CircularProgress size={24} color="inherit" />
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                                <CircularProgress size={20} color="inherit" />
+                                <span>登录中…</span>
+                            </Box>
                         ) : (
                             '登 录'
                         )}

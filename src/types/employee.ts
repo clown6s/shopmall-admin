@@ -11,6 +11,7 @@ export interface EmployeeInfo {
     role: string
 }
 
+// 注意：后端通过 httpOnly cookie 设置认证，响应体中的 token 字段是冗余的
 export interface LoginResp {
     token: string
     employeeInfo: EmployeeInfo

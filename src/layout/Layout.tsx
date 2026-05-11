@@ -1,5 +1,5 @@
 // src/layout/Layout.tsx
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
 import {
     AppBar,
     Toolbar,
@@ -30,29 +30,36 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import MenuIcon from '@mui/icons-material/Menu'
 import useUserStore from '../store/useUserStore'
 import type { JSX } from 'react'
-import { useState } from 'react'
+import React, { useState, type ComponentType } from 'react'
+import type { SvgIconProps } from '@mui/material/SvgIcon'
 
 const DRAWER_WIDTH = 260
 const DRAWER_COLLAPSED_WIDTH = 72
 
-const navItems = [
-    { label: '仪表盘', path: '/', icon: <DashboardIcon />, color: '#667eea' },
+interface NavItem {
+    label: string
+    path: string
+    icon: ComponentType<SvgIconProps>
+    color: string
+}
+
+const navItems: NavItem[] = [
+    { label: '仪表盘', path: '/', icon: DashboardIcon, color: '#667eea' },
 ]
 
-const productMenuItems = [
-    { label: '商品列表', path: '/product', icon: <StorefrontIcon />, color: '#4facfe' },
-    { label: '商品分类', path: '/product/category', icon: <CategoryIcon />, color: '#00f2fe' },
+const productMenuItems: NavItem[] = [
+    { label: '商品列表', path: '/product', icon: StorefrontIcon, color: '#4facfe' },
+    { label: '商品分类', path: '/product/category', icon: CategoryIcon, color: '#00f2fe' },
 ]
 
-const systemMenuItems = [
-    { label: '员工管理', path: '/system/employee', icon: <BadgeIcon />, color: '#38bdf8' },
-    { label: '部门管理', path: '/system/department', icon: <GroupsIcon />, color: '#34d399' },
+const systemMenuItems: NavItem[] = [
+    { label: '员工管理', path: '/system/employee', icon: BadgeIcon, color: '#38bdf8' },
+    { label: '部门管理', path: '/system/department', icon: GroupsIcon, color: '#34d399' },
 ]
 
 export default function Layout(): JSX.Element {
     const logout = useUserStore((state) => state.logout)
     const userInfo = useUserStore((state) => state.userInfo)
-    const navigate = useNavigate()
     const location = useLocation()
     const [systemMenuOpen, setSystemMenuOpen] = useState(false)
     const [productMenuOpen, setProductMenuOpen] = useState(false)
@@ -61,8 +68,7 @@ export default function Layout(): JSX.Element {
     const drawerWidth = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH
 
     const handleLogout = () => {
-        logout()
-        navigate('/login', { replace: true })
+        logout() // logout() 内部已做 window.location.href = '/login'，无需额外 navigate
     }
 
     const isSystemMenuActive = systemMenuItems.some((item) =>
@@ -220,7 +226,7 @@ export default function Layout(): JSX.Element {
                                                 justifyContent: 'center',
                                             }}
                                         >
-                                            {item.icon}
+                                            {React.createElement(item.icon)}
                                         </ListItemIcon>
                                         {!collapsed && (
                                             <ListItemText
@@ -251,6 +257,7 @@ export default function Layout(): JSX.Element {
                             <ListItemButton
                                 onClick={() => !collapsed && setProductMenuOpen(!productMenuOpen)}
                                 selected={isProductMenuActive}
+                                aria-expanded={productMenuOpen || isProductMenuActive}
                                 sx={{
                                     borderRadius: '12px',
                                     mb: 0.5,
@@ -310,7 +317,7 @@ export default function Layout(): JSX.Element {
                                                 }}
                                             >
                                                 <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
-                                                    {item.icon}
+                                                    {React.createElement(item.icon)}
                                                 </ListItemIcon>
                                                 <ListItemText
                                                     primary={item.label}
@@ -349,7 +356,7 @@ export default function Layout(): JSX.Element {
                                                 }}
                                             >
                                                 <ListItemIcon sx={{ minWidth: 'unset', color: isActive ? item.color : '#94a3b8', justifyContent: 'center' }}>
-                                                    {item.icon}
+                                                    {React.createElement(item.icon)}
                                                 </ListItemIcon>
                                             </ListItemButton>
                                         </Tooltip>
@@ -380,6 +387,7 @@ export default function Layout(): JSX.Element {
                             <ListItemButton
                                 onClick={() => !collapsed && setSystemMenuOpen(!systemMenuOpen)}
                                 selected={isSystemMenuActive}
+                                aria-expanded={systemMenuOpen || isSystemMenuActive}
                                 sx={{
                                     borderRadius: '12px',
                                     mb: 0.5, py: 1.2,
@@ -438,7 +446,7 @@ export default function Layout(): JSX.Element {
                                                 }}
                                             >
                                                 <ListItemIcon sx={{ minWidth: 32, color: isActive ? item.color : '#94a3b8' }}>
-                                                    {item.icon}
+                                                    {React.createElement(item.icon)}
                                                 </ListItemIcon>
                                                 <ListItemText
                                                     primary={item.label}
@@ -477,7 +485,7 @@ export default function Layout(): JSX.Element {
                                                 }}
                                             >
                                                 <ListItemIcon sx={{ minWidth: 'unset', color: isActive ? item.color : '#94a3b8', justifyContent: 'center' }}>
-                                                    {item.icon}
+                                                    {React.createElement(item.icon)}
                                                 </ListItemIcon>
                                             </ListItemButton>
                                         </Tooltip>
@@ -505,7 +513,7 @@ export default function Layout(): JSX.Element {
                                 </Avatar>
                             ) : (
                                 <Avatar sx={{ width: 40, height: 40, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600 }}>
-                                    {userInfo?.realName?.charAt(0).toUpperCase() ?? '?'}
+                                    {userInfo?.realName?.charAt(0)?.toUpperCase() ?? '?'}
                                 </Avatar>
                             )}
                             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -513,7 +521,7 @@ export default function Layout(): JSX.Element {
                                     {userInfo?.realName ?? '未知用户'}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
-                                    {userInfo?.phone ?? ''}
+                                    {userInfo?.phone ? userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : ''}
                                 </Typography>
                             </Box>
                         </Box>
@@ -528,7 +536,7 @@ export default function Layout(): JSX.Element {
                                 </Avatar>
                             ) : (
                                 <Avatar sx={{ width: 36, height: 36, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', fontWeight: 600, cursor: 'default' }}>
-                                    {userInfo?.realName?.charAt(0).toUpperCase() ?? '?'}
+                                    {userInfo?.realName?.charAt(0)?.toUpperCase() ?? '?'}
                                 </Avatar>
                             )}
                         </Tooltip>

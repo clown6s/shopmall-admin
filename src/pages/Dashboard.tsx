@@ -1,5 +1,6 @@
 // src/pages/Dashboard.tsx
 import { type JSX } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     Grid,
     Card,
@@ -23,6 +24,7 @@ interface StatCard {
 }
 
 export default function Dashboard(): JSX.Element {
+    const navigate = useNavigate()
     const stats: StatCard[] = [
         {
             label: '商品 SPU',
@@ -227,11 +229,13 @@ export default function Dashboard(): JSX.Element {
                             </Typography>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                 {[
-                                    { label: '用户管理', desc: '查看和管理系统用户', path: '/users' },
+                                    { label: '用户管理', desc: '查看和管理系统用户', path: '/system/employee' },
                                     { label: '商品管理', desc: '管理商品信息和库存', path: '/product' },
                                 ].map((item, idx) => (
                                     <Box
                                         key={item.label}
+                                        role="button"
+                                        tabIndex={0}
                                         sx={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -245,6 +249,13 @@ export default function Dashboard(): JSX.Element {
                                                 background: '#e0e7ff',
                                                 transform: 'translateX(4px)',
                                             },
+                                        }}
+                                        onClick={() => navigate(item.path)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault()
+                                                navigate(item.path)
+                                            }
                                         }}
                                     >
                                         <Box>
