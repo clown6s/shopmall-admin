@@ -13,7 +13,9 @@ export interface CustomTreeItemProps {
     onDelete: (id: string) => void;
     onAddChild: (id: string) => void;
     level?: number;
-    isAdmin?: boolean;
+    canCreate?: boolean;
+    canEdit?: boolean;
+    canDelete?: boolean;
 }
 
 export type DialogMode = 'add' | 'edit';

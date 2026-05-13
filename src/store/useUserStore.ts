@@ -4,7 +4,6 @@
 // 前端仅保留 userInfo 的内存状态
 
 import { create } from "zustand";
-import { logoutApi } from "../api/employee";
 import { invalidateAuthCache } from "../router/RequireAuth";
 
 interface UserInfo {

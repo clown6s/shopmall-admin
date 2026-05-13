@@ -231,10 +231,10 @@ export default function Dashboard(): JSX.Element {
                             </Box>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                 {[
-                                    { label: '后端框架', value: 'Go Gin', color: '#00acd7', icon: <MemoryIcon sx={{ fontSize: 16 }} /> },
-                                    { label: '数据库', value: 'MySQL 8.0', color: '#4479a1', icon: <StorageIcon sx={{ fontSize: 16 }} /> },
+                                    { label: '后端框架', value: 'Go', color: '#00acd7', icon: <MemoryIcon sx={{ fontSize: 16 }} /> },
+                                    { label: '数据库', value: 'MySQL', color: '#4479a1', icon: <StorageIcon sx={{ fontSize: 16 }} /> },
                                     { label: '缓存', value: 'Redis', color: '#dc382d', icon: <MemoryIcon sx={{ fontSize: 16 }} /> },
-                                    { label: '认证方式', value: 'JWT + Redis', color: '#8b5cf6', icon: <SecurityIcon sx={{ fontSize: 16 }} /> },
+                                    { label: '认证方式', value: 'Token + Cookie', color: '#8b5cf6', icon: <SecurityIcon sx={{ fontSize: 16 }} /> },
                                 ].map((item) => (
                                     <Box
                                         key={item.label}

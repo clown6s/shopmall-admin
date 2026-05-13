@@ -40,7 +40,7 @@ export default function ProductCategory() {
         addBrandDialogOpen, newBrand, setNewBrand,
         editBrandDialogOpen, editingBrand, editBrand, setEditBrand,
         deleteBrandDialogOpen, deletingBrand,
-        isAdmin, snackbar,
+        snackbar,
         canCreate, canEdit, canDelete,
         canCreateBrand, canEditBrand, canDeleteBrand,
         handleAddChild,

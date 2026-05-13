@@ -332,7 +332,7 @@ export default function Login(): JSX.Element {
                 {/* Footer */}
                 <Box sx={{ textAlign: 'center', mt: 4 }}>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem' }}>
-                        Go Gin · MySQL 8.0 · Redis · JWT
+                        ShopMall Admin
                     </Typography>
                 </Box>
             </Paper>

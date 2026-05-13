@@ -124,6 +124,9 @@ export interface UseCategoryDataReturn {
     canCreate: boolean;
     canEdit: boolean;
     canDelete: boolean;
+    canCreateBrand: boolean;
+    canEditBrand: boolean;
+    canDeleteBrand: boolean;
     snackbar: SnackbarState;
     setSnackbar: React.Dispatch<React.SetStateAction<SnackbarState>>;
 

@@ -87,9 +87,13 @@ service.interceptors.response.use(
         return response
     },
     (error: AxiosError<ApiResponse<unknown>>) => {
-        if (error.response?.status === 401) {
+        const status = error.response?.status
+        if (status === 401) {
             // token 过期或无效，调用回调处理（避免硬编码 window.location）
             if (onUnauthorized) onUnauthorized();
+        } else if (status === 403) {
+            // 权限不足，在错误消息中标记便于上层识别
+            ;(error as AxiosError & { isForbidden?: boolean }).isForbidden = true
         }
         return Promise.reject(error)
     }
@@ -110,7 +114,7 @@ export const fetchCurrentUser = async (): Promise<{ data: unknown; isNetworkErro
         const res = await service.get<unknown>('/user/me')
         return { data: res.data, isNetworkError: false }
     } catch (err) {
-        const status = (err as any)?.response?.status
+        const status = (err as AxiosError | undefined)?.response?.status
         if (status === 401) return null  // 未认证
         return { data: null, isNetworkError: true }  // 网络错误
     }
