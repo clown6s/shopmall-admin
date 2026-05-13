@@ -1,5 +1,5 @@
 // src/pages/Department/Department.tsx
-import { type JSX, useState, useCallback } from 'react'
+import { type JSX, useState } from 'react'
 import {
     Box,
     Typography,
@@ -17,6 +17,7 @@ import type { IDepartment, CreateDepartmentForm } from '../../types/department'
 import { createDepartmentApi, updateDepartmentApi, deleteDepartmentApi } from '../../api/department'
 import useUserStore from '../../store/useUserStore'
 import { useDepartmentData } from './useDepartmentData'
+import { getApiErrorMsg } from '../../utils/errorHelper'
 import { DepartmentTable } from './DepartmentTable'
 import { DepartmentDialog } from './DepartmentDialog'
 import { DepartmentDeleteDialog } from './DepartmentDeleteDialog'
@@ -41,13 +42,6 @@ export default function Department(): JSX.Element {
     const [deleteTarget, setDeleteTarget] = useState<IDepartment | null>(null)
     const [deleting, setDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState('')
-
-    const getErrorMsg = useCallback((err: unknown, fallback: string) => {
-        return (
-            (err as { response?: { data?: { message?: string } } })
-                ?.response?.data?.message ?? fallback
-        )
-    }, [])
 
     const initForm = (dept: IDepartment) => {
         setForm({
@@ -84,7 +78,7 @@ export default function Department(): JSX.Element {
             setForm({ ...DEFAULT_FORM })
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '创建失败'))
+            setFormError(getApiErrorMsg(err, '创建失败'))
         } finally {
             setSubmitting(false)
         }
@@ -104,7 +98,7 @@ export default function Department(): JSX.Element {
             setCurrentDepartment(null)
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '更新失败'))
+            setFormError(getApiErrorMsg(err, '更新失败'))
         } finally {
             setSubmitting(false)
         }

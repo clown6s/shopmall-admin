@@ -17,6 +17,7 @@ import {
     deleteBrandApi,
 } from '../../api/product';
 import useUserStore from '../../store/useUserStore';
+import { getApiErrorMsg } from '../../utils/errorHelper';
 import type { CategoryDialogData, BrandDialogData, SnackbarState } from './types';
 
 // 品牌缓存：带 TTL（60秒）
@@ -225,9 +226,6 @@ export function useCategoryData(): UseCategoryDataReturn {
     // 实时计算扁平化分类
     const computedFlatCategories = useMemo(() => flattenCategories(items), [items]);
 
-    const getErrorMsg = (err: unknown) =>
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? '';
-
     // 显示提示
     const showSnackbar = useCallback((message: string, severity: 'success' | 'error' | 'warning') => {
         setSnackbar({ open: true, message, severity });
@@ -292,7 +290,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             handleCloseAddDialog();
         } catch (err) {
             if (import.meta.env.DEV) console.error('添加分类失败:', err);
-            showSnackbar(`添加失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`添加失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         }
     }, [newCategory, showSnackbar, handleCloseAddDialog]);
 
@@ -341,7 +339,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             setEditDialogOpen(false);
         } catch (err) {
             if (import.meta.env.DEV) console.error('修改分类失败:', err);
-            showSnackbar(`修改失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`修改失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         }
     }, [editCategory, editingId, showSnackbar]);
 
@@ -366,7 +364,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             }
         } catch (err) {
             if (import.meta.env.DEV) console.error('删除分类失败:', err);
-            showSnackbar(`删除失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`删除失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         } finally {
             setDeleteDialogOpen(false);
             setDeletingId(null);
@@ -466,7 +464,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             handleCloseAddBrandDialog();
         } catch (err) {
             if (import.meta.env.DEV) console.error('添加品牌失败:', err);
-            showSnackbar(`添加失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`添加失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         }
     }, [newBrand, selectedCategoryId, loadBrands, showSnackbar, handleCloseAddBrandDialog]);
 
@@ -514,7 +512,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             handleCloseEditBrandDialog();
         } catch (err) {
             if (import.meta.env.DEV) console.error('更新品牌失败:', err);
-            showSnackbar(`更新失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`更新失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         }
     }, [editBrand, editingBrand, selectedCategoryId, loadBrands, showSnackbar, handleCloseEditBrandDialog]);
 
@@ -543,7 +541,7 @@ export function useCategoryData(): UseCategoryDataReturn {
             handleCloseDeleteBrandDialog();
         } catch (err) {
             if (import.meta.env.DEV) console.error('删除品牌失败:', err);
-            showSnackbar(`删除失败${getErrorMsg(err) ? '：' + getErrorMsg(err) : ''}`, 'error');
+            showSnackbar(`删除失败${getApiErrorMsg(err) ? '：' + getApiErrorMsg(err) : ''}`, 'error');
         }
     }, [deletingBrand, selectedCategoryId, loadBrands, showSnackbar, handleCloseDeleteBrandDialog]);
 

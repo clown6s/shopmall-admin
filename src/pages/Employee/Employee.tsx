@@ -20,6 +20,7 @@ import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi } from '../../a
 import { getAllDepartmentsApi } from '../../api/department'
 import { getRolesApi } from '../../api/role'
 import { PASSWORD_HINT, isValidPassword } from '../../utils/validators'
+import { getApiErrorMsg } from '../../utils/errorHelper'
 import type { IDepartment } from '../../types/department'
 import type { IRole } from '../../types/role'
 import { useEmployeeData } from './useEmployeeData'
@@ -144,9 +145,6 @@ export default function Employee(): JSX.Element {
         setFormError('')
     }
 
-    const getErrorMsg = (err: unknown, fallback: string) =>
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? fallback
-
     const isEditMode = Boolean(currentEmployee)
 
     const validateForm = (): boolean => {
@@ -172,7 +170,7 @@ export default function Employee(): JSX.Element {
             setForm({ ...DEFAULT_FORM })
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '创建失败'))
+            setFormError(getApiErrorMsg(err, '创建失败'))
         } finally {
             setSubmitting(false)
         }
@@ -187,7 +185,7 @@ export default function Employee(): JSX.Element {
             setCurrentEmployee(null)
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '更新失败'))
+            setFormError(getApiErrorMsg(err, '更新失败'))
         } finally {
             setSubmitting(false)
         }

@@ -1,5 +1,5 @@
 // src/pages/Permission/Permission.tsx
-import { type JSX, useState, useCallback } from 'react'
+import { type JSX, useState } from 'react'
 import {
     Box,
     Typography,
@@ -30,6 +30,7 @@ import { createPermissionApi, updatePermissionApi, deletePermissionApi } from '.
 import { usePermissionData } from './usePermissionData'
 import { PermissionDialog } from './PermissionDialog'
 import useUserStore from '../../store/useUserStore'
+import { getApiErrorMsg } from '../../utils/errorHelper'
 
 const DEFAULT_FORM: CreatePermissionForm = {
     permissionName: '',
@@ -71,10 +72,6 @@ export default function Permission(): JSX.Element {
     const [deleting, setDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState('')
 
-    const getErrorMsg = useCallback((err: unknown, fallback: string) => {
-        return (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? fallback
-    }, [])
-
     const handleOpenEdit = (p: IPermission) => {
         setCurrentPerm(p)
         setForm(permToForm(p))
@@ -104,7 +101,7 @@ export default function Permission(): JSX.Element {
             setCurrentPerm(null)
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, dialogMode === 'create' ? '创建失败' : '更新失败'))
+            setFormError(getApiErrorMsg(err, dialogMode === 'create' ? '创建失败' : '更新失败'))
         } finally {
             setSubmitting(false)
         }

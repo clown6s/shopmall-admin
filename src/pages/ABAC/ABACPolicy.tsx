@@ -1,5 +1,5 @@
 // src/pages/ABAC/ABACPolicy.tsx
-import { type JSX, useState, useCallback } from 'react'
+import { type JSX, useState } from 'react'
 import {
     Box,
     Typography,
@@ -13,6 +13,7 @@ import { useABACPolicyData } from './useABACPolicyData'
 import { ABACPolicyTable } from './ABACPolicyTable'
 import { ABACPolicyDialog } from './ABACPolicyDialog'
 import { ABACPolicyDeleteDialog } from './ABACPolicyDeleteDialog'
+import { getApiErrorMsg } from '../../utils/errorHelper'
 import useUserStore from '../../store/useUserStore'
 
 const DEFAULT_FORM: CreateABACPolicyForm = {
@@ -68,13 +69,6 @@ export default function ABACPolicy(): JSX.Element {
     const [deleting, setDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState('')
 
-    const getErrorMsg = useCallback((err: unknown, fallback: string) => {
-        return (
-            (err as { response?: { data?: { message?: string } } })
-                ?.response?.data?.message ?? fallback
-        )
-    }, [])
-
     const handleOpenEdit = (policy: ABACPolicy) => {
         setCurrentPolicy(policy)
         setForm(policyToForm(policy))
@@ -109,7 +103,7 @@ export default function ABACPolicy(): JSX.Element {
             setForm({ ...DEFAULT_FORM })
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '创建失败'))
+            setFormError(getApiErrorMsg(err, '创建失败'))
         } finally {
             setSubmitting(false)
         }
@@ -129,7 +123,7 @@ export default function ABACPolicy(): JSX.Element {
             setCurrentPolicy(null)
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, '更新失败'))
+            setFormError(getApiErrorMsg(err, '更新失败'))
         } finally {
             setSubmitting(false)
         }

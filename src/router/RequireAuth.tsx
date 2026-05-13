@@ -21,6 +21,7 @@ export default function RequireAuth() {
     const [isValidating, setIsValidating] = useState(true)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [networkError, setNetworkError] = useState(false)
+    const [retryCount, setRetryCount] = useState(0)
     const setUserInfo = useUserStore((s) => s.setUserInfo)
     const fetchMenuPaths = useUserStore((s) => s.fetchMenuPaths)
 
@@ -84,7 +85,7 @@ export default function RequireAuth() {
         }
         validate()
         return () => { cancelled = true }
-    }, [setUserInfo, fetchMenuPaths, navigate])
+    }, [setUserInfo, fetchMenuPaths, navigate, retryCount])
 
     if (isValidating) {
         return (
@@ -98,7 +99,7 @@ export default function RequireAuth() {
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, gap: 2 }}>
                 <Typography color="error">网络连接失败，请检查网络后重试</Typography>
-                <Button variant="contained" onClick={() => setNetworkError(false)}>重试</Button>
+                <Button variant="contained" onClick={() => { setNetworkError(false); invalidateAuthCache(); setRetryCount(c => c + 1) }}>重试</Button>
             </Box>
         )
     }

@@ -1,5 +1,5 @@
 // src/pages/Role/Role.tsx
-import { type JSX, useState, useCallback } from 'react'
+import { type JSX, useState } from 'react'
 import { Box, Typography, Button, Alert } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import type { IRole, CreateRoleForm } from '../../types/role'
@@ -10,6 +10,7 @@ import { RoleDialog } from './RoleDialog'
 import { RoleDeleteDialog } from './RoleDeleteDialog'
 import { RolePermissionDialog } from './RolePermissionDialog'
 import useUserStore from '../../store/useUserStore'
+import { getApiErrorMsg } from '../../utils/errorHelper'
 
 const DEFAULT_FORM: CreateRoleForm = {
     roleName: '',
@@ -43,10 +44,6 @@ export default function Role(): JSX.Element {
 
     const [permDialogTarget, setPermDialogTarget] = useState<IRole | null>(null)
 
-    const getErrorMsg = useCallback((err: unknown, fallback: string) => {
-        return (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? fallback
-    }, [])
-
     const handleOpenEdit = (role: IRole) => {
         setCurrentRole(role)
         setForm(roleToForm(role))
@@ -75,7 +72,7 @@ export default function Role(): JSX.Element {
             setCurrentRole(null)
             await fetchData()
         } catch (err: unknown) {
-            setFormError(getErrorMsg(err, dialogMode === 'create' ? '创建失败' : '更新失败'))
+            setFormError(getApiErrorMsg(err, dialogMode === 'create' ? '创建失败' : '更新失败'))
         } finally {
             setSubmitting(false)
         }

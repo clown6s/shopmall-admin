@@ -42,8 +42,21 @@ export interface CategoryTreeItem {
 }
 
 // 转换为 MUI TreeView 格式
-export function toTreeViewItems(nodes: CategoryTreeNode[]): CategoryTreeItem[] {
-    return nodes.map((node) => ({
+function normalizeCategoryNodes(nodes: unknown): CategoryTreeNode[] {
+    if (Array.isArray(nodes)) return nodes
+
+    if (nodes && typeof nodes === 'object' && 'data' in nodes) {
+        return normalizeCategoryNodes((nodes as { data: unknown }).data)
+    }
+
+    if (import.meta.env.DEV) {
+        console.warn('[category] expected category tree array, received:', nodes)
+    }
+    return []
+}
+
+export function toTreeViewItems(nodes: unknown): CategoryTreeItem[] {
+    return normalizeCategoryNodes(nodes).map((node) => ({
         id: String(node.catId),
         label: node.name,
         sort: node.sort,
