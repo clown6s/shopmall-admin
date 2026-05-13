@@ -17,6 +17,7 @@ import {
     deleteBrandApi,
 } from '../../api/product';
 import { useIsAdmin } from '../../hooks/useIsAdmin';
+import useUserStore from '../../store/useUserStore';
 import type { CategoryDialogData, BrandDialogData, SnackbarState } from './types';
 
 // 品牌缓存：带 TTL（60秒）
@@ -120,7 +121,9 @@ export interface UseCategoryDataReturn {
     setDeletingBrand: React.Dispatch<React.SetStateAction<Brand | null>>;
 
     // 其他
-    isAdmin: boolean;
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
     snackbar: SnackbarState;
     setSnackbar: React.Dispatch<React.SetStateAction<SnackbarState>>;
 
@@ -206,6 +209,15 @@ export function useCategoryData(): UseCategoryDataReturn {
     const [deletingBrand, setDeletingBrand] = useState<Brand | null>(null);
 
     const isAdmin = useIsAdmin();
+    const hasPermission = useUserStore((s) => s.hasPermission);
+    // 分类权限
+    const canCreateCategory = isAdmin || hasPermission('product:category:create');
+    const canEditCategory = isAdmin || hasPermission('product:category:update');
+    const canDeleteCategory = isAdmin || hasPermission('product:category:delete');
+    // 品牌权限
+    const canCreateBrand = isAdmin || hasPermission('product:brand:create');
+    const canEditBrand = isAdmin || hasPermission('product:brand:update');
+    const canDeleteBrand = isAdmin || hasPermission('product:brand:delete');
     const brandsCache = useRef<Map<string, CacheEntry>>(new Map());
 
     // 实时计算扁平化分类
@@ -596,7 +608,12 @@ export function useCategoryData(): UseCategoryDataReturn {
         setDeleteBrandDialogOpen,
         deletingBrand,
         setDeletingBrand,
-        isAdmin,
+        canCreate: canCreateCategory,
+        canEdit: canEditCategory,
+        canDelete: canDeleteCategory,
+        canCreateBrand,
+        canEditBrand,
+        canDeleteBrand,
         snackbar,
         setSnackbar,
         showSnackbar,

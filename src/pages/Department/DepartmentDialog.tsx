@@ -40,6 +40,7 @@ export function DepartmentDialog({
             onClose={onClose}
             maxWidth="sm"
             fullWidth
+            {...{ disablePortal: true } as any}
             slotProps={{
                 paper: {
                     sx: {

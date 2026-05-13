@@ -30,6 +30,7 @@ export function EmployeeDeleteDialog({
         <Dialog
             open={open}
             onClose={onClose}
+            {...{ disablePortal: true } as any}
             slotProps={{
                 paper: {
                     sx: { borderRadius: '20px' },

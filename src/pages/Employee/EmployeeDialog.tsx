@@ -66,6 +66,7 @@ export function EmployeeDialog({
             onClose={onClose}
             maxWidth="sm"
             fullWidth
+            {...{ disablePortal: true } as any}
             slotProps={{
                 paper: {
                     sx: {

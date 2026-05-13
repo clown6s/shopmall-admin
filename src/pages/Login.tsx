@@ -10,7 +10,6 @@ import {
     InputAdornment,
     IconButton,
     Paper,
-    Divider,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { loginApi } from '../api/employee'
@@ -29,8 +28,7 @@ function isEmployeeInfo(data: unknown): data is EmployeeInfo {
     return (
         typeof info.id === 'number' &&
         typeof info.realName === 'string' &&
-        typeof info.phone === 'string' &&
-        typeof info.role === 'string'
+        typeof info.phone === 'string'
     )
 }
 
@@ -55,16 +53,11 @@ export default function Login(): JSX.Element {
         }
         try {
             setLoading(true)
-            // 注意：request.ts 响应拦截器已自动解包 { code, data }
-            // res.data 直接就是 LoginResp（内层 data），不再有 code 字段
             const res = await loginApi(mobile, password)
             const loginData = res.data as LoginResp
             if (isEmployeeInfo(loginData?.employeeInfo)) {
-                // 登录成功，直接导航，让 RequireAuth 统一处理用户信息加载
                 navigate('/', { replace: true })
             } else {
-                // 后端返回了非 200 的 code，拦截器会抛错走 catch
-                // 如果走到这里说明 data 结构异常
                 setError('登录响应异常，请联系管理员')
             }
         } catch (err: unknown) {
@@ -88,21 +81,57 @@ export default function Login(): JSX.Element {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
                 position: 'relative',
-                overflowY: 'auto',
+                overflow: 'hidden',
                 py: 4,
-                '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%)',
-                },
             }}
         >
+            {/* Animated floating orbs */}
+            <Box sx={{
+                position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none',
+            }}>
+                {/* Orb 1 - Indigo */}
+                <Box sx={{
+                    position: 'absolute', top: '15%', left: '20%',
+                    width: 300, height: 300, borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)',
+                    filter: 'blur(60px)',
+                    animation: 'floatOrb1 12s ease-in-out infinite',
+                }} />
+                {/* Orb 2 - Purple */}
+                <Box sx={{
+                    position: 'absolute', bottom: '20%', right: '15%',
+                    width: 350, height: 350, borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)',
+                    filter: 'blur(70px)',
+                    animation: 'floatOrb2 15s ease-in-out infinite',
+                }} />
+                {/* Orb 3 - Cyan accent */}
+                <Box sx={{
+                    position: 'absolute', top: '60%', left: '60%',
+                    width: 200, height: 200, borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(34,211,238,0.2) 0%, transparent 70%)',
+                    filter: 'blur(50px)',
+                    animation: 'floatOrb3 10s ease-in-out infinite',
+                }} />
+                {/* Orb 4 - Pink */}
+                <Box sx={{
+                    position: 'absolute', top: '5%', right: '30%',
+                    width: 180, height: 180, borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(244,114,182,0.15) 0%, transparent 70%)',
+                    filter: 'blur(40px)',
+                    animation: 'floatOrb2 18s ease-in-out infinite',
+                }} />
+                {/* Grid pattern overlay */}
+                <Box sx={{
+                    position: 'absolute', inset: 0,
+                    backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+                    backgroundSize: '60px 60px',
+                }} />
+            </Box>
+
+            {/* Login Card */}
             <Paper
                 elevation={0}
                 sx={{
@@ -110,44 +139,47 @@ export default function Login(): JSX.Element {
                     maxWidth: '90%',
                     p: 5,
                     borderRadius: '24px',
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    backdropFilter: 'blur(20px)',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(15, 23, 42, 0.6)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4)',
                     position: 'relative',
                     zIndex: 1,
-                    animation: 'slideUp 0.5s ease-out',
+                    animation: 'scaleIn 0.5s ease-out',
                 }}
             >
                 {/* Logo & Title */}
                 <Box sx={{ textAlign: 'center', mb: 4 }}>
                     <Box
                         sx={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: '20px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            width: 64,
+                            height: 64,
+                            borderRadius: '18px',
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto 20px',
-                            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+                            boxShadow: '0 8px 24px rgba(99,102,241,0.4)',
                         }}
                     >
-                        <StorefrontIcon sx={{ fontSize: 36, color: '#fff' }} />
+                        <StorefrontIcon sx={{ fontSize: 32, color: '#fff' }} />
                     </Box>
                     <Typography
                         variant="h4"
                         sx={{
                             fontWeight: 700,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 50%, #a5b4fc 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             mb: 1,
+                            letterSpacing: '-0.01em',
                         }}
                     >
                         ShopMall Admin
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.45)' }}>
                         欢迎回来，请登录您的账户
                     </Typography>
                 </Box>
@@ -159,6 +191,9 @@ export default function Login(): JSX.Element {
                         sx={{
                             mb: 3,
                             borderRadius: '12px',
+                            background: 'rgba(239,68,68,0.1)',
+                            border: '1px solid rgba(239,68,68,0.2)',
+                            color: '#fca5a5',
                             '& .MuiAlert-icon': { color: '#ef4444' },
                         }}
                     >
@@ -174,23 +209,32 @@ export default function Login(): JSX.Element {
                         value={mobile}
                         onChange={(e) => setPhone(e.target.value)}
                         onKeyDown={handleKeyDown}
+                        autoComplete="off"
                         slotProps={{
                             htmlInput: { maxLength: 11 },
                             input: {
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <PersonOutlineOutlinedIcon sx={{ color: 'text.secondary' }} />
+                                        <PersonOutlineOutlinedIcon sx={{ color: 'rgba(255,255,255,0.3)' }} />
                                     </InputAdornment>
                                 ),
                             },
+                            inputLabel: { sx: { color: 'rgba(255,255,255,0.4)' } },
                         }}
                         sx={{
                             '& .MuiOutlinedInput-root': {
-                                borderRadius: '14px',
-                                background: '#f8fafc',
-                                '& fieldset': { borderColor: '#e2e8f0' },
-                                '&:hover fieldset': { borderColor: '#cbd5e1' },
-                                '&.Mui-focused fieldset': { borderColor: '#667eea' },
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: '#e2e8f0',
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
+                                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
+                                '&.Mui-focused fieldset': { borderColor: '#6366f1' },
+                            },
+                            '& input:-webkit-autofill, & input:-internal-autofill-selected, & input:-internal-autofill-previewed': {
+                                WebkitBoxShadow: '0 0 0 100px rgba(255,255,255,0.05) inset !important',
+                                WebkitTextFillColor: '#e2e8f0 !important',
+                                caretColor: '#e2e8f0 !important',
+                                transition: 'background-color 9999s ease-in-out 0s !important',
                             },
                         }}
                     />
@@ -207,7 +251,7 @@ export default function Login(): JSX.Element {
                             input: {
                                 startAdornment: (
                                     <InputAdornment position="start">
-                                        <LockOutlinedIcon sx={{ color: 'text.secondary' }} />
+                                        <LockOutlinedIcon sx={{ color: 'rgba(255,255,255,0.3)' }} />
                                     </InputAdornment>
                                 ),
                                 endAdornment: (
@@ -216,6 +260,7 @@ export default function Login(): JSX.Element {
                                             size="small"
                                             onClick={() => setShowPassword(!showPassword)}
                                             edge="end"
+                                            sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: 'rgba(255,255,255,0.5)' } }}
                                         >
                                             {showPassword ? (
                                                 <VisibilityOffOutlinedIcon fontSize="small" />
@@ -226,14 +271,22 @@ export default function Login(): JSX.Element {
                                     </InputAdornment>
                                 ),
                             },
+                            inputLabel: { sx: { color: 'rgba(255,255,255,0.4)' } },
                         }}
                         sx={{
                             '& .MuiOutlinedInput-root': {
-                                borderRadius: '14px',
-                                background: '#f8fafc',
-                                '& fieldset': { borderColor: '#e2e8f0' },
-                                '&:hover fieldset': { borderColor: '#cbd5e1' },
-                                '&.Mui-focused fieldset': { borderColor: '#667eea' },
+                                borderRadius: '12px',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: '#e2e8f0',
+                                '& fieldset': { borderColor: 'rgba(255,255,255,0.08)' },
+                                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.15)' },
+                                '&.Mui-focused fieldset': { borderColor: '#6366f1' },
+                            },
+                            '& input:-webkit-autofill, & input:-internal-autofill-selected, & input:-internal-autofill-previewed': {
+                                WebkitBoxShadow: '0 0 0 100px rgba(255,255,255,0.05) inset !important',
+                                WebkitTextFillColor: '#e2e8f0 !important',
+                                caretColor: '#e2e8f0 !important',
+                                transition: 'background-color 9999s ease-in-out 0s !important',
                             },
                         }}
                     />
@@ -247,19 +300,20 @@ export default function Login(): JSX.Element {
                         sx={{
                             mt: 1,
                             py: 1.5,
-                            borderRadius: '14px',
+                            borderRadius: '12px',
                             fontSize: '1rem',
                             fontWeight: 600,
                             textTransform: 'none',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            boxShadow: '0 8px 24px rgba(99,102,241,0.35)',
                             '&:hover': {
-                                background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
-                                boxShadow: '0 12px 35px rgba(102, 126, 234, 0.5)',
+                                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                                boxShadow: '0 10px 30px rgba(99,102,241,0.45)',
                             },
                             '&:disabled': {
-                                background: '#cbd5e1',
+                                background: 'rgba(255,255,255,0.1)',
                                 boxShadow: 'none',
+                                color: 'rgba(255,255,255,0.3)',
                             },
                         }}
                         aria-busy={loading}
@@ -275,14 +329,10 @@ export default function Login(): JSX.Element {
                     </Button>
                 </Box>
 
-                <Divider sx={{ my: 3, color: 'text.secondary', fontSize: '0.875rem' }}>
-                    或使用以下方式
-                </Divider>
-
                 {/* Footer */}
-                <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">
-                        后端: Go Fiber v3 · 数据库: MySQL · 缓存: Redis
+                <Box sx={{ textAlign: 'center', mt: 4 }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.72rem' }}>
+                        Go Gin · MySQL 8.0 · Redis · JWT
                     </Typography>
                 </Box>
             </Paper>

@@ -46,7 +46,7 @@ export default function CategoryDialog({
     const submitLabel = isEdit ? '保存修改' : '添加';
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth {...{ disablePortal: true } as any}>
             <DialogTitle sx={{ pb: 0.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Icon color="primary" />

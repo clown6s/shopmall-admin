@@ -22,6 +22,7 @@ export default function RequireAuth() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [networkError, setNetworkError] = useState(false)
     const setUserInfo = useUserStore((s) => s.setUserInfo)
+    const fetchMenuPaths = useUserStore((s) => s.fetchMenuPaths)
 
     // 设置 401 未授权回调
     useEffect(() => {
@@ -71,6 +72,8 @@ export default function RequireAuth() {
                 if (result.data && typeof result.data === 'object' && 'id' in (result.data as object)) {
                     setUserInfo(result.data as Parameters<typeof setUserInfo>[0])
                     cachedResult = true
+                    // 获取菜单权限路径，用于侧边栏过滤
+                    fetchMenuPaths()
                 } else {
                     cachedResult = false
                 }
@@ -81,7 +84,7 @@ export default function RequireAuth() {
         }
         validate()
         return () => { cancelled = true }
-    }, [setUserInfo, navigate])
+    }, [setUserInfo, fetchMenuPaths, navigate])
 
     if (isValidating) {
         return (

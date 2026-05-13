@@ -24,6 +24,9 @@ const Product = React.lazy(() => import('../pages/Product'))
 const ProductCategory = React.lazy(() => import('../pages/ProductCategory'))
 const Employee = React.lazy(() => import('../pages/Employee'))
 const Department = React.lazy(() => import('../pages/Department'))
+const ABACPolicy = React.lazy(() => import('../pages/ABAC'))
+const Role = React.lazy(() => import('../pages/Role'))
+const Permission = React.lazy(() => import('../pages/Permission'))
 
 const router = createBrowserRouter([
   {
@@ -82,6 +85,30 @@ const router = createBrowserRouter([
                         element: (
                             <React.Suspense fallback={<Loading />}>
                                 <Department />
+                            </React.Suspense>
+                        ),
+                    },
+                    {
+                        path: 'system/abac',
+                        element: (
+                            <React.Suspense fallback={<Loading />}>
+                                <ABACPolicy />
+                            </React.Suspense>
+                        ),
+                    },
+                    {
+                        path: 'system/role',
+                        element: (
+                            <React.Suspense fallback={<Loading />}>
+                                <Role />
+                            </React.Suspense>
+                        ),
+                    },
+                    {
+                        path: 'system/permission',
+                        element: (
+                            <React.Suspense fallback={<Loading />}>
+                                <Permission />
                             </React.Suspense>
                         ),
                     },

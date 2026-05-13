@@ -41,6 +41,8 @@ export default function ProductCategory() {
         editBrandDialogOpen, editingBrand, editBrand, setEditBrand,
         deleteBrandDialogOpen, deletingBrand,
         isAdmin, snackbar,
+        canCreate, canEdit, canDelete,
+        canCreateBrand, canEditBrand, canDeleteBrand,
         handleAddChild,
         handleCloseAddDialog, handleConfirmAdd,
         handleEdit, handleCloseEditDialog, handleConfirmEdit,
@@ -155,7 +157,9 @@ export default function ProductCategory() {
                     onDelete={handleDelete}
                     onAddChild={handleAddChild}
                     onSelectCategory={handleSelectCategory}
-                    isAdmin={isAdmin}
+                    canCreate={canCreate}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
                     loading={loading}
                     error={error}
                     containerRef={containerRef}
@@ -171,7 +175,7 @@ export default function ProductCategory() {
                                 <Chip label={selectedCategoryName} size="small" color="primary" variant="outlined" sx={{ ml: 1 }} />
                             )}
                         </Typography>
-                        {isAdmin && (
+                        {canCreateBrand && (
                             <Button size="small" variant="contained" startIcon={<AddIcon />} onClick={handleOpenAddBrandDialog} disabled={!selectedCategoryId}>
                                 添加品牌
                             </Button>
@@ -202,7 +206,7 @@ export default function ProductCategory() {
                                             <TableCell sx={{ fontWeight: 'bold', width: 70, textAlign: 'center' }}>状态</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', width: 60, textAlign: 'center' }}>排序</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold', textAlign: 'center' }}>描述</TableCell>
-                                            {isAdmin && (
+                                            {(canEditBrand || canDeleteBrand) && (
                                                 <TableCell sx={{ fontWeight: 'bold', width: 90, textAlign: 'center' }}>操作</TableCell>
                                             )}
                                         </TableRow>
@@ -234,18 +238,22 @@ export default function ProductCategory() {
                                                         {brand.description || '-'}
                                                     </Typography>
                                                 </TableCell>
-                                                {isAdmin && (
+                                                {(canEditBrand || canDeleteBrand) && (
                                                     <TableCell sx={{ textAlign: 'center' }}>
-                                                        <Tooltip title="编辑">
-                                                            <IconButton size="small" color="primary" onClick={() => handleOpenEditBrandDialog(brand)}>
-                                                                <EditIcon sx={{ fontSize: 18 }} />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip title="删除">
-                                                            <IconButton size="small" color="error" onClick={() => handleOpenDeleteBrandDialog(brand)}>
-                                                                <DeleteIcon sx={{ fontSize: 18 }} />
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                        {canEditBrand && (
+                                                            <Tooltip title="编辑">
+                                                                <IconButton size="small" color="primary" onClick={() => handleOpenEditBrandDialog(brand)}>
+                                                                    <EditIcon sx={{ fontSize: 18 }} />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                        {canDeleteBrand && (
+                                                            <Tooltip title="删除">
+                                                                <IconButton size="small" color="error" onClick={() => handleOpenDeleteBrandDialog(brand)}>
+                                                                    <DeleteIcon sx={{ fontSize: 18 }} />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
                                                     </TableCell>
                                                 )}
                                             </TableRow>

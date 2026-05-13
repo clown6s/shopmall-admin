@@ -22,7 +22,9 @@ interface CategoryTreeProps {
     onDelete: (id: string) => void;
     onAddChild: (id: string) => void;
     onSelectCategory: (cat: FlattenCategory) => void;
-    isAdmin: boolean;
+    canCreate: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
     loading: boolean;
     error: string | null;
     containerRef: React.RefObject<HTMLDivElement | null>;
@@ -58,7 +60,7 @@ const CustomTreeItemRoot = styled(TreeItem)(({ theme }) => ({
 }));
 
 const CustomTreeItem = (props: TreeItemProps & CustomTreeItemProps) => {
-    const { label, onEdit, onDelete, onAddChild, level, isAdmin, ...rest } = props;
+    const { label, onEdit, onDelete, onAddChild, level, canCreate, canEdit, canDelete, ...rest } = props;
 
     const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -83,25 +85,29 @@ const CustomTreeItem = (props: TreeItemProps & CustomTreeItemProps) => {
             label={
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', '& .action-buttons': { opacity: 0 }, '&:hover .action-buttons': { opacity: 1 } }}>
                     <span style={{ flex: 1 }}>{label}</span>
-                    {isAdmin && (
+                    {(canCreate || canEdit || canDelete) && (
                         <Box className="action-buttons" sx={{ display: 'flex', gap: 0.5 }}>
-                            {canAddChild && (
+                            {canCreate && canAddChild && (
                                 <Tooltip title="添加子分类">
                                     <IconButton size="small" onClick={handleAddChild} sx={{ p: 0.25, color: 'primary.main' }}>
                                         <AddIcon sx={{ fontSize: 16 }} />
                                     </IconButton>
                                 </Tooltip>
                             )}
-                            <Tooltip title="编辑">
-                                <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
-                                    <EditIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip>
-                            <Tooltip title="删除">
-                                <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
-                                    <DeleteIcon sx={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip>
+                            {canEdit && (
+                                <Tooltip title="编辑">
+                                    <IconButton size="small" onClick={handleEdit} sx={{ p: 0.25 }}>
+                                        <EditIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                            {canDelete && (
+                                <Tooltip title="删除">
+                                    <IconButton size="small" onClick={handleDelete} sx={{ p: 0.25, color: 'error.main' }}>
+                                        <DeleteIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                         </Box>
                     )}
                 </Box>
@@ -117,7 +123,9 @@ export default function CategoryTree({
     onDelete,
     onAddChild,
     onSelectCategory,
-    isAdmin,
+    canCreate,
+    canEdit,
+    canDelete,
     loading,
     error,
     containerRef,
@@ -136,10 +144,12 @@ export default function CategoryTree({
                 onDelete={onDelete}
                 onAddChild={onAddChild}
                 level={cat?.catLevel}
-                isAdmin={isAdmin}
+                canCreate={canCreate}
+                canEdit={canEdit}
+                canDelete={canDelete}
             />
         );
-    }, [categoryMap, onEdit, onDelete, onAddChild, isAdmin]);
+    }, [categoryMap, onEdit, onDelete, onAddChild, canCreate, canEdit, canDelete]);
 
     return (
         <Box sx={{ flex: '0 0 350px', display: 'flex', flexDirection: 'column' }}>

@@ -38,7 +38,7 @@ export default function DeleteConfirmDialog({
         : '确定要删除该分类吗？删除后无法恢复。';
 
     return (
-        <Dialog open={open} onClose={deleting ? undefined : onClose}>
+        <Dialog open={open} onClose={deleting ? undefined : onClose} {...{ disablePortal: true } as any}>
             <DialogTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <DeleteIcon color="error" />
