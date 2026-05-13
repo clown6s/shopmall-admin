@@ -23,6 +23,8 @@ import type { ABACPolicy } from '../../types/abac'
 export interface ABACPolicyTableProps {
     list: ABACPolicy[]
     loading: boolean
+    canEdit?: boolean
+    canDelete?: boolean
     onEdit: (policy: ABACPolicy) => void
     onDelete: (policy: ABACPolicy) => void
 }
@@ -30,6 +32,8 @@ export interface ABACPolicyTableProps {
 export function ABACPolicyTable({
     list,
     loading,
+    canEdit,
+    canDelete,
     onEdit,
     onDelete,
 }: ABACPolicyTableProps): JSX.Element {
@@ -180,6 +184,7 @@ export function ABACPolicyTable({
                                         </Typography>
                                     </TableCell>
                                     <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
+                                        {canEdit && (
                                         <Tooltip title="编辑">
                                             <IconButton
                                                 size="small"
@@ -193,6 +198,8 @@ export function ABACPolicyTable({
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        )}
+                                        {canDelete && (
                                         <Tooltip title="删除">
                                             <IconButton
                                                 size="small"
@@ -206,6 +213,7 @@ export function ABACPolicyTable({
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

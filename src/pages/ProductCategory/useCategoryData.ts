@@ -16,7 +16,6 @@ import {
     updateBrandApi,
     deleteBrandApi,
 } from '../../api/product';
-import { useIsAdmin } from '../../hooks/useIsAdmin';
 import useUserStore from '../../store/useUserStore';
 import type { CategoryDialogData, BrandDialogData, SnackbarState } from './types';
 
@@ -211,16 +210,16 @@ export function useCategoryData(): UseCategoryDataReturn {
     const [deleteBrandDialogOpen, setDeleteBrandDialogOpen] = useState(false);
     const [deletingBrand, setDeletingBrand] = useState<Brand | null>(null);
 
-    const isAdmin = useIsAdmin();
+    
     const hasPermission = useUserStore((s) => s.hasPermission);
     // 分类权限
-    const canCreateCategory = isAdmin || hasPermission('product:category:create');
-    const canEditCategory = isAdmin || hasPermission('product:category:update');
-    const canDeleteCategory = isAdmin || hasPermission('product:category:delete');
+    const canCreateCategory = hasPermission('product:category:create');
+    const canEditCategory = hasPermission('product:category:update');
+    const canDeleteCategory = hasPermission('product:category:delete');
     // 品牌权限
-    const canCreateBrand = isAdmin || hasPermission('product:brand:create');
-    const canEditBrand = isAdmin || hasPermission('product:brand:update');
-    const canDeleteBrand = isAdmin || hasPermission('product:brand:delete');
+    const canCreateBrand = hasPermission('product:brand:create');
+    const canEditBrand = hasPermission('product:brand:update');
+    const canDeleteBrand = hasPermission('product:brand:delete');
     const brandsCache = useRef<Map<string, CacheEntry>>(new Map());
 
     // 实时计算扁平化分类

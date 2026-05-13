@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
 import type { IDepartment } from '../../types/department'
+import type { IRole } from '../../types/role'
 import { isValidUrl } from '../../utils/validators'
 
 interface EmployeeDialogProps {
@@ -22,6 +23,7 @@ interface EmployeeDialogProps {
     editingEmployee: IEmployee | null
     formData: CreateEmployeeForm
     departments: IDepartment[]
+    roles: IRole[]
     formError: string
     submitting: boolean
     onFormChange: (form: CreateEmployeeForm) => void
@@ -42,6 +44,7 @@ export function EmployeeDialog({
     editingEmployee,
     formData,
     departments,
+    roles,
     formError,
     submitting,
     onFormChange,
@@ -183,8 +186,9 @@ export function EmployeeDialog({
                             slotProps={{ select: { native: true } }}
                             {...fieldProps}
                         >
-                            <option value="管理员">管理员</option>
-                            <option value="employee">员工</option>
+                            {(roles || []).map((r) => (
+                                <option key={r.id} value={r.roleKey}>{r.roleName}</option>
+                            ))}
                         </TextField>
                         {isEditMode ? (
                             <TextField
@@ -204,7 +208,7 @@ export function EmployeeDialog({
                                 type="password"
                                 value={formData.password ?? ''}
                                 onChange={(e) => onFormChange({ ...formData, password: e.target.value })}
-                                slotProps={{ htmlInput: { autoComplete: 'new-password' } }}
+                                slotProps={{ htmlInput: { autoComplete: 'new-password', maxLength: 64 } }}
                                 {...fieldProps}
                             />
                         )}

@@ -36,6 +36,7 @@ import type { JSX } from 'react'
 import React, { useState, type ComponentType } from 'react'
 import type { SvgIconProps } from '@mui/material/SvgIcon'
 
+
 const DRAWER_WIDTH = 260
 const DRAWER_COLLAPSED_WIDTH = 72
 

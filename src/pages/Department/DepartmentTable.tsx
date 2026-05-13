@@ -28,7 +28,7 @@ export interface DepartmentTableProps {
     page: number
     pageSize: number
     total: number
-    isAdmin: boolean
+    canEdit: boolean; canDelete: boolean
     onPageChange: (page: number) => void
     onPageSizeChange: (pageSize: number) => void
     onEdit: (dept: IDepartment) => void
@@ -41,7 +41,7 @@ export function DepartmentTable({
     page,
     pageSize,
     total,
-    isAdmin,
+    canEdit, canDelete,
     onPageChange,
     onPageSizeChange,
     onEdit,
@@ -65,7 +65,7 @@ export function DepartmentTable({
                             <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
                             <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
                             <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>备注</TableCell>
-                            {isAdmin && (
+                            {(canEdit || canDelete) && (
                                 <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>
                                     操作
                                 </TableCell>
@@ -75,13 +75,13 @@ export function DepartmentTable({
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isAdmin ? 6 : 5} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={(canEdit || canDelete) ? 6 : 5} align="center" sx={{ py: 6 }}>
                                     <CircularProgress size={32} sx={{ color: '#667eea' }} />
                                 </TableCell>
                             </TableRow>
                         ) : !list || list.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={isAdmin ? 6 : 5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                                <TableCell colSpan={(canEdit || canDelete) ? 6 : 5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                                     <Box sx={{ textAlign: 'center' }}>
                                         <GroupsIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} />
                                         <Typography>暂无部门数据</Typography>
@@ -124,7 +124,7 @@ export function DepartmentTable({
                                             {dept.remark || '—'}
                                         </Typography>
                                     </TableCell>
-                                    {isAdmin && (
+                                    {(canEdit || canDelete) && (
                                         <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
                                             <Tooltip title="编辑">
                                                 <IconButton

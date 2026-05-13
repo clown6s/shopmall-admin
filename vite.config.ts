@@ -24,6 +24,8 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    // P1: 显式禁用生产环境 source map，防止源码泄露
+    sourcemap: false,
     // 使用 esbuild 压缩（Vite 默认，更快）
     minify: 'esbuild',
     // Terser 压缩选项（如果需要更小体积，可以安装 terser）

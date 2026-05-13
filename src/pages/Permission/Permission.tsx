@@ -29,6 +29,7 @@ import type { IPermission, CreatePermissionForm } from '../../types/permission'
 import { createPermissionApi, updatePermissionApi, deletePermissionApi } from '../../api/permission'
 import { usePermissionData } from './usePermissionData'
 import { PermissionDialog } from './PermissionDialog'
+import useUserStore from '../../store/useUserStore'
 
 const DEFAULT_FORM: CreatePermissionForm = {
     permissionName: '',
@@ -58,6 +59,7 @@ function permToForm(p: IPermission): CreatePermissionForm {
 
 export default function Permission(): JSX.Element {
     const { list, loading, error, fetchData } = usePermissionData()
+    const hasPermission = useUserStore((s) => s.hasPermission)
 
     const [dialogMode, setDialogMode] = useState<'create' | 'edit' | null>(null)
     const [currentPerm, setCurrentPerm] = useState<IPermission | null>(null)
@@ -130,6 +132,7 @@ export default function Permission(): JSX.Element {
                     <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>权限管理</Typography>
                     <Typography variant="body2" color="text.secondary">管理系统菜单、按钮、API 权限</Typography>
                 </Box>
+                {hasPermission('system:permission:create') && (
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -143,6 +146,7 @@ export default function Permission(): JSX.Element {
                 >
                     新建权限
                 </Button>
+                )}
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>{error}</Alert>}
@@ -197,8 +201,8 @@ export default function Permission(): JSX.Element {
                                             <Chip label={perm.status === 1 ? '启用' : '禁用'} color={perm.status === 1 ? 'success' : 'default'} size="small" sx={{ height: 24, fontWeight: 500, '& .MuiChip-label': { px: 1 } }} />
                                         </TableCell>
                                         <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
-                                            <Tooltip title="编辑"><IconButton size="small" onClick={() => handleOpenEdit(perm)} sx={{ color: '#64748b', '&:hover': { background: 'rgba(100, 116, 139, 0.1)' } }}><EditIcon fontSize="small" /></IconButton></Tooltip>
-                                            <Tooltip title="删除"><IconButton size="small" onClick={() => setDeleteTarget(perm)} sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}><DeleteIcon fontSize="small" /></IconButton></Tooltip>
+                                            {hasPermission('system:permission:update') && <Tooltip title="编辑"><IconButton size="small" onClick={() => handleOpenEdit(perm)} sx={{ color: '#64748b', '&:hover': { background: 'rgba(100, 116, 139, 0.1)' } }}><EditIcon fontSize="small" /></IconButton></Tooltip>}
+                                            {hasPermission('system:permission:delete') && <Tooltip title="删除"><IconButton size="small" onClick={() => setDeleteTarget(perm)} sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}><DeleteIcon fontSize="small" /></IconButton></Tooltip>}
                                         </TableCell>
                                     </TableRow>
                                 ))

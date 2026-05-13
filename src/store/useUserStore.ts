@@ -81,19 +81,15 @@ const useUserStore = create<UserState>((set, get) => ({
     },
 
     logout: () => {
-        console.log('[LOGOUT] logout() called, userInfo:', useUserStore.getState().userInfo);
         // 如果已登出，不再重复执行
         if (useUserStore.getState().userInfo === null) {
-            console.log('[LOGOUT] userInfo is null, skip');
             return;
         }
-        console.log('[LOGOUT] clearing userInfo...');
+        // 通知后端清除 session/缓存（fire-and-forget，不阻塞跳转）
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
         set({ userInfo: null, menuPaths: [], permissions: [] });
         invalidateAuthCache();
-        console.log('[LOGOUT] redirecting to /login...');
-        // 直接跳转登录页，不等待后端退出接口
         window.location.href = '/login';
-        console.log('[LOGOUT] window.location.href set done');
     },
 }))
 

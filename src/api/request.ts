@@ -7,10 +7,46 @@ import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import type { ApiResponse } from '../types/api'
 import JSONBig from 'json-bigint'
 
-// 401 未授权回调，由路由守卫设置
+// 401 未授权回调，由路由守卫设置（刷新 token 也失败时才触发）
 let onUnauthorized: (() => void) | null = null
 export const setOnUnauthorized = (fn: (() => void) | null) => {
     onUnauthorized = fn;
+}
+
+// --- Refresh Token 逻辑 ---
+let isRefreshing = false
+let pendingRequests: Array<{
+    resolve: (token: string) => void
+    reject: (err: unknown) => void
+}> = []
+
+function onRefreshSuccess(newToken: string) {
+    pendingRequests.forEach(({ resolve }) => resolve(newToken))
+    pendingRequests = []
+}
+
+function onRefreshFailure(err: unknown) {
+    pendingRequests.forEach(({ reject }) => reject(err))
+    pendingRequests = []
+    if (onUnauthorized) onUnauthorized()
+}
+
+/**
+ * 尝试用 refresh_token cookie 换取新的 access token。
+ * 后端 POST /auth/refresh 会设置新的 auth_token cookie，
+ * 所以刷新成功后不需要前端手动保存 token。
+ */
+async function tryRefreshToken(): Promise<boolean> {
+    try {
+        // 用独立的 axios 实例，不走拦截器，避免循环
+        const res = await axios.post('/api/auth/refresh', null, {
+            withCredentials: true,
+            timeout: 5000,
+        })
+        return res.status === 200
+    } catch {
+        return false
+    }
 }
 
 // json-bigint 使用 useNativeBigInt: true 会将大数字解析为 BigInt，
@@ -55,6 +91,8 @@ service.interceptors.request.use((config) => {
         const csrfToken = getCSRFToken()
         if (csrfToken) {
             config.headers['X-XSRF-TOKEN'] = csrfToken
+        } else if (import.meta.env.DEV) {
+            console.warn('[CSRF] xsrf-token cookie not found for', config.method, config.url)
         }
     }
     return config
@@ -86,11 +124,40 @@ service.interceptors.response.use(
 
         return response
     },
-    (error: AxiosError<ApiResponse<unknown>>) => {
+    async (error: AxiosError<ApiResponse<unknown>>) => {
         const status = error.response?.status
-        if (status === 401) {
-            // token 过期或无效，调用回调处理（避免硬编码 window.location）
-            if (onUnauthorized) onUnauthorized();
+        const originalRequest = error.config
+
+        if (status === 401 && originalRequest) {
+            // 对 /auth/refresh 本身返回 401，直接走未授权逻辑
+            if (originalRequest.url === '/auth/refresh') {
+                onRefreshFailure(error)
+                return Promise.reject(error)
+            }
+
+            // 已有刷新请求在进行中，排队等待
+            if (isRefreshing) {
+                return new Promise<AxiosResponse>((resolve, reject) => {
+                    pendingRequests.push({
+                        resolve: () => resolve(service(originalRequest!)),
+                        reject: (err) => reject(err),
+                    })
+                })
+            }
+
+            isRefreshing = true
+            const ok = await tryRefreshToken()
+            isRefreshing = false
+
+            if (ok) {
+                // 后端已通过 Set-Cookie 设置了新的 auth_token，直接重试原请求
+                onRefreshSuccess('')
+                return service(originalRequest)
+            } else {
+                // refresh token 也过期了，走登出逻辑
+                onRefreshFailure(error)
+                return Promise.reject(error)
+            }
         } else if (status === 403) {
             // 权限不足，在错误消息中标记便于上层识别
             ;(error as AxiosError & { isForbidden?: boolean }).isForbidden = true
@@ -115,7 +182,8 @@ export const fetchCurrentUser = async (): Promise<{ data: unknown; isNetworkErro
         return { data: res.data, isNetworkError: false }
     } catch (err) {
         const status = (err as AxiosError | undefined)?.response?.status
-        if (status === 401) return null  // 未认证
+        // 401 已经被拦截器自动刷新处理过，这里不会再拿到
+        if (status === 401) return null  // 未认证（refresh 也失败）
         return { data: null, isNetworkError: true }  // 网络错误
     }
 }

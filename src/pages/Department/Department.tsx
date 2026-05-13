@@ -15,7 +15,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import CloseIcon from '@mui/icons-material/Close'
 import type { IDepartment, CreateDepartmentForm } from '../../types/department'
 import { createDepartmentApi, updateDepartmentApi, deleteDepartmentApi } from '../../api/department'
-import { useIsAdmin } from '../../hooks/useIsAdmin'
+import useUserStore from '../../store/useUserStore'
 import { useDepartmentData } from './useDepartmentData'
 import { DepartmentTable } from './DepartmentTable'
 import { DepartmentDialog } from './DepartmentDialog'
@@ -30,7 +30,7 @@ const DEFAULT_FORM: CreateDepartmentForm = {
 
 export default function Department(): JSX.Element {
     const { list, total, page, pageSize, search, loading, error, setPage, setPageSize, setSearch, fetchData } = useDepartmentData()
-    const isAdmin = useIsAdmin()
+    const hasPermission = useUserStore((s) => s.hasPermission)
 
     const [dialogMode, setDialogMode] = useState<'create' | 'edit' | null>(null)
     const [currentDepartment, setCurrentDepartment] = useState<IDepartment | null>(null)
@@ -137,7 +137,7 @@ export default function Department(): JSX.Element {
                         管理系统部门信息
                     </Typography>
                 </Box>
-                {isAdmin && (
+                {hasPermission('system:department:create') && (
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -222,7 +222,7 @@ export default function Department(): JSX.Element {
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                isAdmin={isAdmin}
+                canEdit={hasPermission('system:department:update')} canDelete={hasPermission('system:department:delete')}
                 onPageChange={setPage}
                 onPageSizeChange={setPageSize}
                 onEdit={handleOpenEdit}

@@ -47,7 +47,7 @@ interface EmployeeTableProps {
     page: number
     pageSize: number
     total: number
-    isAdmin: boolean
+    canEdit: boolean; canDelete: boolean
     departments: IDepartment[]
     onPageChange: (page: number) => void
     onPageSizeChange: (pageSize: number) => void
@@ -61,7 +61,7 @@ export function EmployeeTable({
     page,
     pageSize,
     total,
-    isAdmin,
+    canEdit, canDelete,
     departments,
     onPageChange,
     onPageSizeChange,
@@ -99,7 +99,7 @@ export function EmployeeTable({
                             <TableCell align="center" sx={headerCellSx}>角色</TableCell>
                             <TableCell align="center" sx={headerCellSx}>状态</TableCell>
                             <TableCell align="center" sx={headerCellSx}>入职日期</TableCell>
-                            {isAdmin && (
+                            {(canEdit || canDelete) && (
                                 <TableCell align="center" sx={{ ...headerCellSx, pr: 3 }}>
                                     操作
                                 </TableCell>
@@ -109,14 +109,14 @@ export function EmployeeTable({
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={isAdmin ? 10 : 9} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={(canEdit || canDelete) ? 10 : 9} align="center" sx={{ py: 6 }}>
                                     <CircularProgress size={32} sx={{ color: '#667eea' }} />
                                 </TableCell>
                             </TableRow>
                         ) : list.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={isAdmin ? 10 : 9}
+                                    colSpan={(canEdit || canDelete) ? 10 : 9}
                                     align="center"
                                     sx={{ py: 8, color: 'text.secondary' }}
                                 >
@@ -229,7 +229,7 @@ export function EmployeeTable({
                                                 {emp.createTime ? emp.createTime.split('T')[0] : '—'}
                                             </Typography>
                                         </TableCell>
-                                        {isAdmin && (
+                                        {(canEdit || canDelete) && (
                                             <TableCell align="center" sx={{ ...cellSx, pr: 3 }}>
                                                 <Tooltip title="编辑">
                                                     <IconButton

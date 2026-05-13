@@ -15,11 +15,13 @@ import AddIcon from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
-import { useIsAdmin } from '../../hooks/useIsAdmin'
+import useUserStore from '../../store/useUserStore'
 import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi } from '../../api/employee'
 import { getAllDepartmentsApi } from '../../api/department'
+import { getRolesApi } from '../../api/role'
 import { PASSWORD_HINT, isValidPassword } from '../../utils/validators'
 import type { IDepartment } from '../../types/department'
+import type { IRole } from '../../types/role'
 import { useEmployeeData } from './useEmployeeData'
 import { EmployeeTable } from './EmployeeTable'
 import { EmployeeDialog } from './EmployeeDialog'
@@ -70,7 +72,8 @@ export default function Employee(): JSX.Element {
     const [deleteTarget, setDeleteTarget] = useState<IEmployee | null>(null)
     const [deleting, setDeleting] = useState(false)
     const [departments, setDepartments] = useState<IDepartment[]>([])
-    const isAdmin = useIsAdmin()
+    const [roles, setRoles] = useState<IRole[]>([])
+    const hasPermission = useUserStore((s) => s.hasPermission)
 
     // M-1: 已移除重复的 useEffect — useEmployeeData hook 内部已有自动 fetchData
 
@@ -97,11 +100,17 @@ export default function Employee(): JSX.Element {
 
     const fetchDepartments = useCallback(async () => {
         try {
-            const res = await getAllDepartmentsApi()
-            const data = res.data as IDepartment[]
+            const [deptRes, roleRes] = await Promise.all([
+                getAllDepartmentsApi(),
+                getRolesApi(),
+            ])
+            const data = deptRes.data as IDepartment[]
             setDepartments(Array.isArray(data) ? data : [])
+            const roleData = roleRes.data as IRole[]
+            setRoles(Array.isArray(roleData) ? roleData : [])
         } catch {
             setDepartments([])
+            setRoles([])
         }
     }, [])
 
@@ -203,7 +212,7 @@ export default function Employee(): JSX.Element {
                         管理系统员工信息和在职状态
                     </Typography>
                 </Box>
-                {isAdmin && (
+                {hasPermission('system:employee:create') && (
                     <Button variant="contained" startIcon={<AddIcon />}
                         onClick={() => handleOpenDialog()} sx={buttonSx}>
                         新建员工
@@ -265,7 +274,7 @@ export default function Employee(): JSX.Element {
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                isAdmin={isAdmin}
+                canEdit={hasPermission('system:employee:update')} canDelete={hasPermission('system:employee:delete')}
                 departments={departments}
                 onPageChange={setPage}
                 onPageSizeChange={handlePageSizeChange}
@@ -278,6 +287,7 @@ export default function Employee(): JSX.Element {
                 editingEmployee={currentEmployee}
                 formData={form}
                 departments={departments}
+                roles={roles}
                 formError={formError}
                 submitting={submitting}
                 onFormChange={setForm}

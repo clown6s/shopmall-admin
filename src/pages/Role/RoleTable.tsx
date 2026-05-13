@@ -23,12 +23,14 @@ import type { IRole } from '../../types/role'
 export interface RoleTableProps {
     list: IRole[]
     loading: boolean
+    canEdit?: boolean
+    canDelete?: boolean
     onEdit: (role: IRole) => void
     onAssignPermissions: (role: IRole) => void
     onDelete: (role: IRole) => void
 }
 
-export function RoleTable({ list, loading, onEdit, onAssignPermissions, onDelete }: RoleTableProps): JSX.Element {
+export function RoleTable({ list, loading, canEdit, canDelete, onEdit, onAssignPermissions, onDelete }: RoleTableProps): JSX.Element {
     return (
         <Paper elevation={0} sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <TableContainer>
@@ -71,21 +73,25 @@ export function RoleTable({ list, loading, onEdit, onAssignPermissions, onDelete
                                         <Typography variant="body2">{role.createdAt ? role.createdAt.split('T')[0] : '—'}</Typography>
                                     </TableCell>
                                     <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
+                                        {canEdit && (
                                         <Tooltip title="编辑">
                                             <IconButton size="small" onClick={() => onEdit(role)} sx={{ color: '#64748b', '&:hover': { background: 'rgba(100, 116, 139, 0.1)' } }}>
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        )}
                                         <Tooltip title="分配权限">
                                             <IconButton size="small" onClick={() => onAssignPermissions(role)} sx={{ color: '#6366f1', '&:hover': { background: 'rgba(99, 102, 241, 0.1)' } }}>
                                                 <VpnKeyIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        {canDelete && (
                                         <Tooltip title="删除">
                                             <IconButton size="small" onClick={() => onDelete(role)} sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}>
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))

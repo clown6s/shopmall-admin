@@ -13,6 +13,7 @@ import { useABACPolicyData } from './useABACPolicyData'
 import { ABACPolicyTable } from './ABACPolicyTable'
 import { ABACPolicyDialog } from './ABACPolicyDialog'
 import { ABACPolicyDeleteDialog } from './ABACPolicyDeleteDialog'
+import useUserStore from '../../store/useUserStore'
 
 const DEFAULT_FORM: CreateABACPolicyForm = {
     name: '',
@@ -55,6 +56,7 @@ function policyToForm(policy: ABACPolicy): CreateABACPolicyForm {
 
 export default function ABACPolicy(): JSX.Element {
     const { list, loading, error, fetchData } = useABACPolicyData()
+    const hasPermission = useUserStore((s) => s.hasPermission)
 
     const [dialogMode, setDialogMode] = useState<'create' | 'edit' | null>(null)
     const [currentPolicy, setCurrentPolicy] = useState<ABACPolicy | null>(null)
@@ -160,6 +162,7 @@ export default function ABACPolicy(): JSX.Element {
                         管理 ABAC 访问控制策略（默认拒绝，按优先级匹配）
                     </Typography>
                 </Box>
+                {hasPermission('system:abac:create') && (
                 <Button
                         variant="contained"
                         startIcon={<AddIcon />}
@@ -178,6 +181,7 @@ export default function ABACPolicy(): JSX.Element {
                     >
                         新建策略
                     </Button>
+                )}
             </Box>
 
             {error && (
@@ -197,6 +201,8 @@ export default function ABACPolicy(): JSX.Element {
                 loading={loading}
                 onEdit={handleOpenEdit}
                 onDelete={setDeleteTarget}
+                canEdit={hasPermission('system:abac:update')}
+                canDelete={hasPermission('system:abac:delete')}
             />
 
             <ABACPolicyDialog

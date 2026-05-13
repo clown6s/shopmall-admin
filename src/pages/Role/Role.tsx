@@ -9,6 +9,7 @@ import { RoleTable } from './RoleTable'
 import { RoleDialog } from './RoleDialog'
 import { RoleDeleteDialog } from './RoleDeleteDialog'
 import { RolePermissionDialog } from './RolePermissionDialog'
+import useUserStore from '../../store/useUserStore'
 
 const DEFAULT_FORM: CreateRoleForm = {
     roleName: '',
@@ -28,6 +29,7 @@ function roleToForm(role: IRole): CreateRoleForm {
 
 export default function Role(): JSX.Element {
     const { list, loading, error, fetchData } = useRoleData()
+    const hasPermission = useUserStore((s) => s.hasPermission)
 
     const [dialogMode, setDialogMode] = useState<'create' | 'edit' | null>(null)
     const [currentRole, setCurrentRole] = useState<IRole | null>(null)
@@ -101,6 +103,7 @@ export default function Role(): JSX.Element {
                     <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>角色管理</Typography>
                     <Typography variant="body2" color="text.secondary">管理系统角色及权限分配</Typography>
                 </Box>
+                {hasPermission('system:role:create') && (
                 <Button
                     variant="contained"
                     startIcon={<AddIcon />}
@@ -114,6 +117,7 @@ export default function Role(): JSX.Element {
                 >
                     新建角色
                 </Button>
+                )}
             </Box>
 
             {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>{error}</Alert>}
@@ -125,6 +129,8 @@ export default function Role(): JSX.Element {
                 onEdit={handleOpenEdit}
                 onAssignPermissions={setPermDialogTarget}
                 onDelete={setDeleteTarget}
+                canEdit={hasPermission('system:role:update')}
+                canDelete={hasPermission('system:role:delete')}
             />
 
             <RoleDialog
