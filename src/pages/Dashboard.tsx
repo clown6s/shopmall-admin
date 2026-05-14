@@ -29,46 +29,47 @@ interface StatCard {
     accentBg: string
 }
 
+const STATS: StatCard[] = [
+    {
+        label: '商品 SPU',
+        value: '—',
+        subtext: '待接入数据',
+        icon: <StorefrontIcon sx={{ fontSize: 24 }} />,
+        gradient: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
+        accentColor: '#6366f1',
+        accentBg: 'rgba(99,102,241,0.08)',
+    },
+    {
+        label: '行政区划',
+        value: '—',
+        subtext: '待接入数据',
+        icon: <MapIcon sx={{ fontSize: 24 }} />,
+        gradient: 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)',
+        accentColor: '#0ea5e9',
+        accentBg: 'rgba(14,165,233,0.08)',
+    },
+    {
+        label: '日活跃用户',
+        value: '—',
+        subtext: '待接入数据',
+        icon: <TrendingUpIcon sx={{ fontSize: 24 }} />,
+        gradient: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+        accentColor: '#10b981',
+        accentBg: 'rgba(16,185,129,0.08)',
+    },
+    {
+        label: '待处理订单',
+        value: '—',
+        subtext: '待接入数据',
+        icon: <PeopleIcon sx={{ fontSize: 24 }} />,
+        gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
+        accentColor: '#ec4899',
+        accentBg: 'rgba(236,72,153,0.08)',
+    },
+]
+
 export default function Dashboard(): JSX.Element {
     const navigate = useNavigate()
-    const stats: StatCard[] = [
-        {
-            label: '商品 SPU',
-            value: '—',
-            subtext: '待接入数据',
-            icon: <StorefrontIcon sx={{ fontSize: 24 }} />,
-            gradient: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
-            accentColor: '#6366f1',
-            accentBg: 'rgba(99,102,241,0.08)',
-        },
-        {
-            label: '行政区划',
-            value: '—',
-            subtext: '待接入数据',
-            icon: <MapIcon sx={{ fontSize: 24 }} />,
-            gradient: 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)',
-            accentColor: '#0ea5e9',
-            accentBg: 'rgba(14,165,233,0.08)',
-        },
-        {
-            label: '日活跃用户',
-            value: '—',
-            subtext: '待接入数据',
-            icon: <TrendingUpIcon sx={{ fontSize: 24 }} />,
-            gradient: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-            accentColor: '#10b981',
-            accentBg: 'rgba(16,185,129,0.08)',
-        },
-        {
-            label: '待处理订单',
-            value: '—',
-            subtext: '待接入数据',
-            icon: <PeopleIcon sx={{ fontSize: 24 }} />,
-            gradient: 'linear-gradient(135deg, #f472b6 0%, #ec4899 100%)',
-            accentColor: '#ec4899',
-            accentBg: 'rgba(236,72,153,0.08)',
-        },
-    ]
 
     return (
         <Box sx={{ animation: 'fadeIn 0.4s ease-out' }}>
@@ -110,7 +111,7 @@ export default function Dashboard(): JSX.Element {
 
             {/* ── Stats Cards ── */}
             <Grid container spacing={3}>
-                {stats.map((stat, index) => (
+                {STATS.map((stat, index) => (
                     <Grid key={stat.label} size={{ xs: 12, sm: 6, lg: 3 }}>
                         <Card
                             elevation={0}

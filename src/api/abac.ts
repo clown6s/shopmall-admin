@@ -1,10 +1,17 @@
 // src/api/abac.ts
 import request from './request'
-import type { ABACPolicy, CreateABACPolicyForm } from '../types/abac'
+import type {
+    ABACPolicy,
+    ABACSubjectAttrs,
+    ABACResourceAttrs,
+    ABACPolicyCreateBody,
+    ABACPolicyUpdateBody,
+    CreateABACPolicyForm,
+} from '../types/abac'
 
 /** 表单 → 后端创建请求体 */
-function formToCreateBody(form: CreateABACPolicyForm) {
-    const subjectAttrs: Record<string, unknown> = {}
+function formToCreateBody(form: CreateABACPolicyForm): ABACPolicyCreateBody {
+    const subjectAttrs: ABACSubjectAttrs = {}
     if (form.departments.trim()) {
         subjectAttrs.departments = form.departments
             .split(',')
@@ -25,29 +32,28 @@ function formToCreateBody(form: CreateABACPolicyForm) {
             .map(Number)
             .filter((n) => !isNaN(n))
     }
-    const body: Record<string, unknown> = {
+    const resourceAttrs: ABACResourceAttrs = form.pathPattern
+        ? { path_pattern: form.pathPattern }
+        : {}
+    const body: ABACPolicyCreateBody = {
         name: form.name,
         description: form.description,
         effect: form.effect,
         priority: form.priority,
         action: form.action,
         subjectAttrs,
-        resourceAttrs: {},
-    }
-    if (form.pathPattern) {
-        body.resourceAttrs = { path_pattern: form.pathPattern }
+        resourceAttrs,
     }
     return body
 }
 
 /** 表单 → 后端更新请求体（全量字段） */
-function formToUpdateBody(form: CreateABACPolicyForm) {
+function formToUpdateBody(form: CreateABACPolicyForm): ABACPolicyUpdateBody {
     const create = formToCreateBody(form)
-    const body: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(create)) {
-        body[k] = v
+    const body: ABACPolicyUpdateBody = {
+        ...create,
+        status: form.status,
     }
-    body.status = form.status
     return body
 }
 

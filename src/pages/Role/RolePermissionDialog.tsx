@@ -16,6 +16,7 @@ import {
 import type { IPermission } from '../../types/permission'
 import { getPermissionsApi } from '../../api/permission'
 import { getRolePermissionIdsApi, assignPermissionsApi } from '../../api/role'
+import { DIALOG_PAPER_SLOT_PROPS } from '../../utils/dialog'
 
 export interface RolePermissionDialogProps {
     open: boolean
@@ -34,6 +35,7 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
 
     useEffect(() => {
         if (!open || !roleId) return
+        let cancelled = false
         setLoading(true)
         setError('')
         Promise.all([
@@ -41,11 +43,14 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
             getRolePermissionIdsApi(roleId).then((r) => r.data as number[]),
         ])
             .then(([perms, ids]) => {
-                setPermissions(perms)
-                setCheckedIds(new Set(ids))
+                if (!cancelled) {
+                    setPermissions(perms)
+                    setCheckedIds(new Set(ids))
+                }
             })
-            .catch(() => setError('加载权限数据失败'))
-            .finally(() => setLoading(false))
+            .catch(() => { if (!cancelled) setError('加载权限数据失败') })
+            .finally(() => { if (!cancelled) setLoading(false) })
+        return () => { cancelled = true }
     }, [open, roleId])
 
     const handleToggle = (id: number) => {
@@ -127,8 +132,8 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
             onClose={onClose}
             maxWidth="sm"
             fullWidth
-            {...{ disablePortal: true } as any}
-            slotProps={{ paper: { sx: { borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' } } }}
+            disablePortal
+            slotProps={DIALOG_PAPER_SLOT_PROPS}
         >
             <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
                 分配权限 - {roleName}

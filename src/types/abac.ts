@@ -7,12 +7,36 @@ export interface ABACPolicy {
     description: string
     effect: 'allow' | 'deny'
     priority: number
-    subjectAttrs: Record<string, unknown>
-    resourceAttrs: Record<string, unknown>
+    subjectAttrs: ABACSubjectAttrs
+    resourceAttrs: ABACResourceAttrs
     action: string
     status: number
     createdAt: string
     updatedAt: string
+}
+
+export interface ABACSubjectAttrs {
+    departments?: string[]
+    positions?: string[]
+    user_ids?: number[]
+}
+
+export interface ABACResourceAttrs {
+    path_pattern?: string
+}
+
+export interface ABACPolicyCreateBody {
+    name: string
+    description: string
+    effect: string
+    priority: number
+    action: string
+    subjectAttrs: ABACSubjectAttrs
+    resourceAttrs: ABACResourceAttrs
+}
+
+export interface ABACPolicyUpdateBody extends ABACPolicyCreateBody {
+    status: number
 }
 
 /** ABAC 策略创建/编辑表单（友好的扁平结构） */

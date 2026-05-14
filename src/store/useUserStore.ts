@@ -6,7 +6,7 @@
 import { create } from "zustand";
 import { invalidateAuthCache } from "../router/RequireAuth";
 
-interface UserInfo {
+export interface UserInfo {
     id: number
     realName: string
     avatar: string

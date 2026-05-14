@@ -17,6 +17,7 @@ import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
 import type { IDepartment } from '../../types/department'
 import type { IRole } from '../../types/role'
 import { isValidUrl } from '../../utils/validators'
+import { DIALOG_PAPER_SLOT_PROPS } from '../../utils/dialog'
 
 interface EmployeeDialogProps {
     open: boolean
@@ -69,15 +70,8 @@ export function EmployeeDialog({
             onClose={onClose}
             maxWidth="sm"
             fullWidth
-            {...{ disablePortal: true } as any}
-            slotProps={{
-                paper: {
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    },
-                },
-            }}
+            disablePortal
+            slotProps={DIALOG_PAPER_SLOT_PROPS}
         >
             <DialogTitle sx={{ fontWeight: 700, fontSize: '1.125rem', pb: 1 }}>
                 {isEditMode ? '编辑员工' : '新建员工'}

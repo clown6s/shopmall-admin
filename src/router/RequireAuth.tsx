@@ -1,6 +1,6 @@
 // src/router/RequireAuth.tsx
 // 路由守卫：验证 token 有效性（不再依赖 localStorage）
-import { Navigate, Outlet, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { fetchCurrentUser, setOnUnauthorized } from '../api/request'
 import { CircularProgress, Box, Typography, Button } from '@mui/material'
@@ -22,8 +22,10 @@ export default function RequireAuth() {
     const [isAuthenticated, setIsAuthenticated] = useState(false)
     const [networkError, setNetworkError] = useState(false)
     const [retryCount, setRetryCount] = useState(0)
+    const location = useLocation()
     const setUserInfo = useUserStore((s) => s.setUserInfo)
     const fetchMenuPaths = useUserStore((s) => s.fetchMenuPaths)
+    const menuPaths = useUserStore((s) => s.menuPaths)
 
     // 设置 401 未授权回调
     useEffect(() => {
@@ -70,8 +72,8 @@ export default function RequireAuth() {
             }
             if (!cancelled) {
                 // 同步用户信息到 store
-                if (result.data && typeof result.data === 'object' && 'id' in (result.data as object)) {
-                    setUserInfo(result.data as Parameters<typeof setUserInfo>[0])
+                if (result.data && typeof result.data.id === 'number') {
+                    setUserInfo(result.data)
                     cachedResult = true
                     // 获取菜单权限路径，用于侧边栏过滤
                     fetchMenuPaths()
@@ -102,6 +104,15 @@ export default function RequireAuth() {
                 <Button variant="contained" onClick={() => { setNetworkError(false); invalidateAuthCache(); setRetryCount(c => c + 1) }}>重试</Button>
             </Box>
         )
+    }
+
+    // menuPaths 非空时，检查当前路由是否在允许的菜单路径中（前缀匹配）
+    if (menuPaths.length > 0) {
+        const pathname = location.pathname === '/' ? '/' : location.pathname
+        const allowed = menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+        if (!allowed) {
+            return <Navigate to="/" replace />
+        }
     }
 
     return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />

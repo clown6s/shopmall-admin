@@ -562,6 +562,7 @@ export function useCategoryData(): UseCategoryDataReturn {
         };
 
         loadCategories();
+        // no async cancellation needed for initial load
     }, []);
 
     return {

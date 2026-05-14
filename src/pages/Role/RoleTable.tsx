@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import type { IRole } from '../../types/role'
+import { TABLE_HEADER_CELL_SX } from '../../utils/theme'
 
 export interface RoleTableProps {
     list: IRole[]
@@ -34,15 +35,15 @@ export function RoleTable({ list, loading, canEdit, canDelete, onEdit, onAssignP
     return (
         <Paper elevation={0} sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <TableContainer>
-                <Table>
+                <Table aria-label="角色列表">
                     <TableHead>
                         <TableRow sx={{ background: '#f8fafc' }}>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>角色名称</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>角色标识</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>描述</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>操作</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>角色名称</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>角色标识</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>描述</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>状态</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>创建时间</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>操作</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

@@ -5,6 +5,7 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import type { ApiResponse } from '../types/api'
+import type { UserInfo } from '../store/useUserStore'
 import JSONBig from 'json-bigint'
 
 // 401 未授权回调，由路由守卫设置（刷新 token 也失败时才触发）
@@ -146,17 +147,20 @@ service.interceptors.response.use(
             }
 
             isRefreshing = true
-            const ok = await tryRefreshToken()
-            isRefreshing = false
+            try {
+                const ok = await tryRefreshToken()
 
-            if (ok) {
-                // 后端已通过 Set-Cookie 设置了新的 auth_token，直接重试原请求
-                onRefreshSuccess('')
-                return service(originalRequest)
-            } else {
-                // refresh token 也过期了，走登出逻辑
-                onRefreshFailure(error)
-                return Promise.reject(error)
+                if (ok) {
+                    // 后端已通过 Set-Cookie 设置了新的 auth_token，直接重试原请求
+                    onRefreshSuccess('')
+                    return service(originalRequest)
+                } else {
+                    // refresh token 也过期了，走登出逻辑
+                    onRefreshFailure(error)
+                    return Promise.reject(error)
+                }
+            } finally {
+                isRefreshing = false
             }
         } else if (status === 403) {
             // 权限不足，在错误消息中标记便于上层识别
@@ -176,9 +180,9 @@ export default service
 
 // 获取当前登录用户信息的工具函数
 // 用于在路由守卫中验证登录状态
-export const fetchCurrentUser = async (): Promise<{ data: unknown; isNetworkError: boolean } | null> => {
+export const fetchCurrentUser = async (): Promise<{ data: UserInfo | null; isNetworkError: boolean } | null> => {
     try {
-        const res = await service.get<unknown>('/user/me')
+        const res = await service.get<UserInfo>('/user/me')
         return { data: res.data, isNetworkError: false }
     } catch (err) {
         const status = (err as AxiosError | undefined)?.response?.status

@@ -13,14 +13,13 @@ import {
     IconButton,
     CircularProgress,
     Chip,
-    Pagination,
     Tooltip,
-    TextField,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import GroupsIcon from '@mui/icons-material/Groups'
 import type { IDepartment } from '../../types/department'
+import PaginationBar from '../../components/PaginationBar'
 
 export interface DepartmentTableProps {
     list: IDepartment[]
@@ -57,7 +56,7 @@ export function DepartmentTable({
             }}
         >
             <TableContainer>
-                <Table>
+                <Table aria-label="部门列表">
                     <TableHead>
                         <TableRow sx={{ background: '#f8fafc' }}>
                             <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>部门名称</TableCell>
@@ -167,52 +166,13 @@ export function DepartmentTable({
 
             {/* 分页器 */}
             {total > 0 && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        px: 2,
-                        py: 2.5,
-                        borderTop: '1px solid #e2e8f0',
-                        flexShrink: 0,
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="body2" color="text.secondary">
-                            每页
-                        </Typography>
-                        <TextField
-                            size="small"
-                            select
-                            value={pageSize}
-                            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                            slotProps={{ select: { native: true } }}
-                            sx={{
-                                width: 80,
-                                '& .MuiOutlinedInput-root': { borderRadius: '8px' },
-                            }}
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </TextField>
-                        <Typography variant="body2" color="text.secondary">
-                            条，共 {total} 条
-                        </Typography>
-                    </Box>
-                    <Pagination
-                        count={Math.ceil(total / pageSize)}
-                        page={page}
-                        onChange={(_, v) => onPageChange(v)}
-                        shape="rounded"
-                        size="small"
-                        sx={{
-                            '& .MuiPaginationItem-root': { borderRadius: '10px' },
-                        }}
-                    />
-                </Box>
+                <PaginationBar
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    onPageChange={onPageChange}
+                    onPageSizeChange={onPageSizeChange}
+                />
             )}
         </Paper>
     )

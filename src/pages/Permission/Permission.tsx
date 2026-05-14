@@ -16,10 +16,6 @@ import {
     CircularProgress,
     Chip,
     Tooltip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -29,8 +25,10 @@ import type { IPermission, CreatePermissionForm } from '../../types/permission'
 import { createPermissionApi, updatePermissionApi, deletePermissionApi } from '../../api/permission'
 import { usePermissionData } from './usePermissionData'
 import { PermissionDialog } from './PermissionDialog'
+import DeleteConfirmDialog from '../../components/DeleteConfirmDialog'
 import useUserStore from '../../store/useUserStore'
 import { getApiErrorMsg } from '../../utils/errorHelper'
+import { PRIMARY_BUTTON_SX, TABLE_HEADER_CELL_SX } from '../../utils/theme'
 
 const DEFAULT_FORM: CreatePermissionForm = {
     permissionName: '',
@@ -115,8 +113,8 @@ export default function Permission(): JSX.Element {
             await deletePermissionApi(deleteTarget.id)
             setDeleteTarget(null)
             fetchData()
-        } catch {
-            setDeleteError('删除失败，请重试')
+        } catch (err: unknown) {
+            setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
             setDeleting(false)
         }
@@ -134,12 +132,7 @@ export default function Permission(): JSX.Element {
                     variant="contained"
                     startIcon={<AddIcon />}
                     onClick={handleOpenCreate}
-                    sx={{
-                        borderRadius: '12px', px: 3, py: 1,
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                        '&:hover': { background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)', boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)' },
-                    }}
+                    sx={PRIMARY_BUTTON_SX}
                 >
                     新建权限
                 </Button>
@@ -151,17 +144,17 @@ export default function Permission(): JSX.Element {
 
             <Paper elevation={0} sx={{ borderRadius: '20px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                 <TableContainer>
-                    <Table>
+                    <Table aria-label="权限列表">
                         <TableHead>
                             <TableRow sx={{ background: '#f8fafc' }}>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>权限名称</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>权限标识</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>类型</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>路径</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>方法</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>排序</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>操作</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>权限名称</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>权限标识</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>类型</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>路径</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>方法</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>排序</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>状态</TableCell>
+                                <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>操作</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -223,32 +216,12 @@ export default function Permission(): JSX.Element {
             {/* Delete confirmation */}
             <DeleteConfirmDialog
                 open={Boolean(deleteTarget)}
-                name={deleteTarget?.permissionName ?? ''}
+                entityType="权限"
+                entityName={deleteTarget?.permissionName ?? ''}
                 deleting={deleting}
                 onConfirm={handleDelete}
                 onClose={() => setDeleteTarget(null)}
             />
         </Box>
-    )
-}
-
-function DeleteConfirmDialog({ open, name, deleting, onConfirm, onClose }: {
-    open: boolean; name: string; deleting: boolean; onConfirm: () => void; onClose: () => void
-}): JSX.Element {
-    return (
-        <Dialog open={open} onClose={onClose} {...{ disablePortal: true } as any} slotProps={{ paper: { sx: { borderRadius: '20px' } } }}>
-            <DialogTitle sx={{ fontWeight: 700 }}>确认删除</DialogTitle>
-            <DialogContent>
-                <Typography color="text.secondary">
-                    确定要删除权限 <strong>{name}</strong> 吗？<br />此操作不可撤销。
-                </Typography>
-            </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-                <Button onClick={onClose} sx={{ borderRadius: '10px' }}>取消</Button>
-                <Button variant="contained" color="error" onClick={onConfirm} disabled={deleting} sx={{ borderRadius: '10px' }}>
-                    {deleting ? <CircularProgress size={18} color="inherit" /> : '删除'}
-                </Button>
-            </DialogActions>
-        </Dialog>
     )
 }

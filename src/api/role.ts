@@ -1,6 +1,6 @@
 // src/api/role.ts
 import request from './request'
-import type { IRole } from '../types/role'
+import type { IRole, CreateRoleForm, UpdateRoleForm } from '../types/role'
 
 export const getRolesApi = () =>
     request.get<IRole[]>('/admin/role')
@@ -8,10 +8,10 @@ export const getRolesApi = () =>
 export const getRoleApi = (id: number) =>
     request.get<IRole>(`/admin/role/${id}`)
 
-export const createRoleApi = (data: { roleName: string; roleKey: string; description: string }) =>
+export const createRoleApi = (data: CreateRoleForm) =>
     request.post<IRole>('/admin/role', data)
 
-export const updateRoleApi = (id: number, data: Record<string, unknown>) =>
+export const updateRoleApi = (id: number, data: UpdateRoleForm) =>
     request.put<null>(`/admin/role/${id}`, data)
 
 export const deleteRoleApi = (id: number) =>

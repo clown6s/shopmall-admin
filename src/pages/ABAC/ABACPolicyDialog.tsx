@@ -12,6 +12,7 @@ import {
     Box,
 } from '@mui/material'
 import type { CreateABACPolicyForm } from '../../types/abac'
+import { DIALOG_PAPER_SLOT_PROPS } from '../../utils/dialog'
 
 export interface ABACPolicyDialogProps {
     open: boolean
@@ -40,15 +41,8 @@ export function ABACPolicyDialog({
             onClose={onClose}
             maxWidth="sm"
             fullWidth
-            {...{ disablePortal: true } as any}
-            slotProps={{
-                paper: {
-                    sx: {
-                        borderRadius: '24px',
-                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                    },
-                },
-            }}
+            disablePortal
+            slotProps={DIALOG_PAPER_SLOT_PROPS}
         >
             <DialogTitle sx={{ fontWeight: 700, fontSize: '1.25rem' }}>
                 {title}

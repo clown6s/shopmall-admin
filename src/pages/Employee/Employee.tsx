@@ -19,11 +19,12 @@ import useUserStore from '../../store/useUserStore'
 import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi } from '../../api/employee'
 import { getAllDepartmentsApi } from '../../api/department'
 import { getRolesApi } from '../../api/role'
-import { PASSWORD_HINT, isValidPassword } from '../../utils/validators'
+import { PASSWORD_HINT, isValidPassword, isValidPhone, isValidEmail, isValidUrl } from '../../utils/validators'
 import { getApiErrorMsg } from '../../utils/errorHelper'
 import type { IDepartment } from '../../types/department'
 import type { IRole } from '../../types/role'
 import { useEmployeeData } from './useEmployeeData'
+import { PRIMARY_BUTTON_SX } from '../../utils/theme'
 import { EmployeeTable } from './EmployeeTable'
 import { EmployeeDialog } from './EmployeeDialog'
 import { EmployeeDeleteDialog } from './EmployeeDeleteDialog'
@@ -31,13 +32,6 @@ import { EmployeeDeleteDialog } from './EmployeeDeleteDialog'
 const DEFAULT_FORM: CreateEmployeeForm = {
     realName: '', phone: '', email: '', age: undefined, gender: 1,
     department: '', position: '', role: 'employee', workStatus: 1, canLogin: 1, remark: '',
-}
-
-const buttonSx = {
-    borderRadius: '12px', px: 3, py: 1,
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-    '&:hover': { background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)', boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)' },
 }
 
 const iconButtonSx = {
@@ -92,8 +86,8 @@ export default function Employee(): JSX.Element {
             await deleteEmployeeApi(deleteTarget.id)
             setDeleteTarget(null)
             await fetchData()
-        } catch {
-            setDeleteError('删除失败，请重试')
+        } catch (err: unknown) {
+            setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
             setDeleting(false)
         }
@@ -151,12 +145,12 @@ export default function Employee(): JSX.Element {
         setFormError('')
         if (!form.realName?.trim()) { setFormError('姓名不能为空'); return false }
         if (!form.phone?.trim()) { setFormError('手机号不能为空'); return false }
-        if (!/^1[3-9]\d{9}$/.test(form.phone)) { setFormError('手机号格式不正确'); return false }
+        if (!isValidPhone(form.phone)) { setFormError('手机号格式不正确'); return false }
         if (!form.department?.trim()) { setFormError('部门不能为空'); return false }
         if (!form.position?.trim()) { setFormError('职位不能为空'); return false }
         if (!isEditMode && (!form.password || !isValidPassword(form.password))) { setFormError(PASSWORD_HINT); return false }
-        if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setFormError('邮箱格式不正确'); return false }
-        if (form.avatar && !/^https?:\/\/.+/.test(form.avatar)) { setFormError('头像URL格式不正确'); return false }
+        if (form.email && !isValidEmail(form.email)) { setFormError('邮箱格式不正确'); return false }
+        if (form.avatar && !isValidUrl(form.avatar)) { setFormError('头像URL格式不正确'); return false }
         if (form.age !== undefined && (form.age < 0 || form.age > 150)) { setFormError('年龄需在0-150之间'); return false }
         return true
     }
@@ -212,7 +206,7 @@ export default function Employee(): JSX.Element {
                 </Box>
                 {hasPermission('system:employee:create') && (
                     <Button variant="contained" startIcon={<AddIcon />}
-                        onClick={() => handleOpenDialog()} sx={buttonSx}>
+                        onClick={() => handleOpenDialog()} sx={PRIMARY_BUTTON_SX}>
                         新建员工
                     </Button>
                 )}

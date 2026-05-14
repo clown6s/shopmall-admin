@@ -52,11 +52,13 @@ export function useDepartmentData(): UseDepartmentDataReturn {
     // 搜索变化时重置页码并重新获取数据
     useEffect(() => {
         setPage(1)
+        // no async cleanup needed
     }, [search])
 
     // 页码、页大小或搜索条件变化时获取数据
     useEffect(() => {
         fetchData()
+        // requestIdRef handles race condition cancellation
     }, [fetchData])
 
     return {

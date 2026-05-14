@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import SecurityIcon from '@mui/icons-material/Security'
 import type { ABACPolicy } from '../../types/abac'
+import { TABLE_HEADER_CELL_SX } from '../../utils/theme'
 
 export interface ABACPolicyTableProps {
     list: ABACPolicy[]
@@ -63,18 +64,18 @@ export function ABACPolicyTable({
             }}
         >
             <TableContainer>
-                <Table>
+                <Table aria-label="策略列表">
                     <TableHead>
                         <TableRow sx={{ background: '#f8fafc' }}>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>策略名称</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>效果</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>优先级</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>路径规则</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>方法</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>匹配条件</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>状态</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>创建时间</TableCell>
-                            <TableCell align="center" sx={{ fontWeight: 600, color: '#64748b', py: 1.5 }}>操作</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>策略名称</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>效果</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>优先级</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>路径规则</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>方法</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>匹配条件</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>状态</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>创建时间</TableCell>
+                            <TableCell align="center" sx={TABLE_HEADER_CELL_SX}>操作</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

@@ -13,10 +13,8 @@ import {
     IconButton,
     CircularProgress,
     Chip,
-    Pagination,
-    TextField,
-    Avatar,
     Tooltip,
+    Avatar,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -26,6 +24,7 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark'
 import BadgeIcon from '@mui/icons-material/Badge'
 import type { IEmployee } from '../../types/employee'
 import type { IDepartment } from '../../types/department'
+import PaginationBar from '../../components/PaginationBar'
 
 const GENDER_MAP: Record<number, { label: string; color: 'primary' | 'secondary' | 'default'; icon: JSX.Element }> = {
     1: { label: '男', color: 'primary', icon: <MaleIcon fontSize="small" /> },
@@ -69,10 +68,6 @@ export function EmployeeTable({
     onDelete,
 }: EmployeeTableProps): JSX.Element {
     const getInitials = (name: string) => (name ? name.charAt(0).toUpperCase() : '?')
-
-    const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-        onPageChange(value)
-    }
 
     return (
         <Paper
@@ -273,52 +268,13 @@ export function EmployeeTable({
 
             {/* 分页器 */}
             {total > 0 && (
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        px: 2,
-                        py: 2.5,
-                        borderTop: '1px solid #e2e8f0',
-                        flexShrink: 0,
-                    }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="body2" color="text.secondary">
-                            每页
-                        </Typography>
-                        <TextField
-                            size="small"
-                            select
-                            value={pageSize}
-                            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                            slotProps={{ select: { native: true } }}
-                            sx={{
-                                width: 80,
-                                '& .MuiOutlinedInput-root': { borderRadius: '8px' },
-                            }}
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </TextField>
-                        <Typography variant="body2" color="text.secondary">
-                            条，共 {total} 条
-                        </Typography>
-                    </Box>
-                    <Pagination
-                        count={Math.ceil(total / pageSize)}
-                        page={page}
-                        onChange={handlePageChange}
-                        shape="rounded"
-                        size="small"
-                        sx={{
-                            '& .MuiPaginationItem-root': { borderRadius: '10px' },
-                        }}
-                    />
-                </Box>
+                <PaginationBar
+                    page={page}
+                    pageSize={pageSize}
+                    total={total}
+                    onPageChange={onPageChange}
+                    onPageSizeChange={onPageSizeChange}
+                />
             )}
         </Paper>
     )

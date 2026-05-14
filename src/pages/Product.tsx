@@ -1,5 +1,5 @@
 // src/pages/Product.tsx
-import { type JSX, useState } from 'react'
+import { type JSX } from 'react'
 import {
     Box,
     Typography,
@@ -8,8 +8,6 @@ import {
 import StorefrontIcon from '@mui/icons-material/Storefront'
 
 export default function Product(): JSX.Element {
-    const [list] = useState<never[]>([])
-
     return (
         <Box sx={{ animation: 'fadeIn 0.3s ease-out' }}>
             {/* Header */}
@@ -22,8 +20,7 @@ export default function Product(): JSX.Element {
                 </Typography>
             </Box>
 
-            {list.length === 0 ? (
-                <Paper
+            <Paper
                     elevation={0}
                     sx={{
                         borderRadius: '20px',
@@ -40,7 +37,6 @@ export default function Product(): JSX.Element {
                         商品数据将在后端接口完善后显示
                     </Typography>
                 </Paper>
-            ) : null}
         </Box>
     )
 }

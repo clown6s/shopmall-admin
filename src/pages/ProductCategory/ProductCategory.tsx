@@ -197,7 +197,7 @@ export default function ProductCategory() {
                     ) : (
                         <Paper sx={{ flex: 1, overflow: 'auto' }}>
                             <TableContainer>
-                                <Table size="small">
+                                <Table size="small" aria-label="品牌列表">
                                     <TableHead sx={{ bgcolor: 'grey.100' }}>
                                         <TableRow>
                                             <TableCell sx={{ fontWeight: 'bold', width: 56, textAlign: 'center' }}>Logo</TableCell>

@@ -73,6 +73,7 @@ export function useEmployeeData(): UseEmployeeDataReturn {
     // 组件挂载时自动获取数据
     useEffect(() => {
         fetchData()
+        // requestIdRef handles race condition cancellation
     }, [fetchData])
 
     const handlePageSizeChange = (val: number) => {

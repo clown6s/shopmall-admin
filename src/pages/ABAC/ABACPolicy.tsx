@@ -14,6 +14,7 @@ import { ABACPolicyTable } from './ABACPolicyTable'
 import { ABACPolicyDialog } from './ABACPolicyDialog'
 import { ABACPolicyDeleteDialog } from './ABACPolicyDeleteDialog'
 import { getApiErrorMsg } from '../../utils/errorHelper'
+import { PRIMARY_BUTTON_SX } from '../../utils/theme'
 import useUserStore from '../../store/useUserStore'
 
 const DEFAULT_FORM: CreateABACPolicyForm = {
@@ -137,8 +138,8 @@ export default function ABACPolicy(): JSX.Element {
             await deleteABACPolicyApi(deleteTarget.id)
             setDeleteTarget(null)
             fetchData()
-        } catch {
-            setDeleteError('删除失败，请重试')
+        } catch (err: unknown) {
+            setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
             setDeleting(false)
         }
@@ -161,17 +162,7 @@ export default function ABACPolicy(): JSX.Element {
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={handleOpenCreate}
-                        sx={{
-                            borderRadius: '12px',
-                            px: 3,
-                            py: 1,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
-                                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)',
-                            },
-                        }}
+                        sx={PRIMARY_BUTTON_SX}
                     >
                         新建策略
                     </Button>

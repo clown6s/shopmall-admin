@@ -16,3 +16,7 @@ export interface CreateRoleForm {
     description: string
     status: number
 }
+
+export interface UpdateRoleForm extends CreateRoleForm {
+    status: number
+}

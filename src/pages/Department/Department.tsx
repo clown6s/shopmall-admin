@@ -18,6 +18,7 @@ import { createDepartmentApi, updateDepartmentApi, deleteDepartmentApi } from '.
 import useUserStore from '../../store/useUserStore'
 import { useDepartmentData } from './useDepartmentData'
 import { getApiErrorMsg } from '../../utils/errorHelper'
+import { PRIMARY_BUTTON_SX } from '../../utils/theme'
 import { DepartmentTable } from './DepartmentTable'
 import { DepartmentDialog } from './DepartmentDialog'
 import { DepartmentDeleteDialog } from './DepartmentDeleteDialog'
@@ -112,8 +113,8 @@ export default function Department(): JSX.Element {
             await deleteDepartmentApi(deleteTarget.deptId)
             setDeleteTarget(null)
             fetchData()
-        } catch {
-            setDeleteError('删除失败，请重试')
+        } catch (err: unknown) {
+            setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
             setDeleting(false)
         }
@@ -136,17 +137,7 @@ export default function Department(): JSX.Element {
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={handleOpenCreate}
-                        sx={{
-                            borderRadius: '12px',
-                            px: 3,
-                            py: 1,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%)',
-                                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.5)',
-                            },
-                        }}
+                        sx={PRIMARY_BUTTON_SX}
                     >
                         新建部门
                     </Button>
