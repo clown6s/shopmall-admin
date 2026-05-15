@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { loginApi } from '../api/employee'
 import type { EmployeeInfo, LoginResp } from '../types/employee'
 import useUserStore from '../store/useUserStore'
+import service from '../api/request'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -41,7 +42,10 @@ export default function Login(): JSX.Element {
     useEffect(() => {
         if (userInfo) {
             navigate('/', { replace: true })
+            return
         }
+        // 登录前获取初始 CSRF token cookie
+        service.get('/csrf/token').catch(() => {})
     }, [userInfo, navigate])
 
     const [mobile, setPhone] = useState('')
