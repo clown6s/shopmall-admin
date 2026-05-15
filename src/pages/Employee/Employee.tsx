@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
 import useUserStore from '../../store/useUserStore'
-import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi } from '../../api/employee'
+import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi, resetPasswordApi } from '../../api/employee'
 import { getAllDepartmentsApi } from '../../api/department'
 import { getRolesApi } from '../../api/role'
 import { PASSWORD_HINT, isValidPassword, isValidPhone, isValidEmail, isValidUrl } from '../../utils/validators'
@@ -185,6 +185,10 @@ export default function Employee(): JSX.Element {
         }
     }
 
+    const handleResetPassword = async (empId: number, newPassword: string) => {
+        await resetPasswordApi(empId, newPassword)
+    }
+
     const handleDialogClose = () => {
         setOpenCreate(false)
         setOpenEdit(false)
@@ -284,6 +288,7 @@ export default function Employee(): JSX.Element {
                 submitting={submitting}
                 onFormChange={setForm}
                 onSubmit={isEditMode ? handleEdit : handleCreate}
+                onResetPassword={handleResetPassword}
                 onClose={handleDialogClose}
             />
 

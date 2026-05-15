@@ -25,7 +25,6 @@ import CategoryIcon from '@mui/icons-material/Category'
 import GroupsIcon from '@mui/icons-material/Groups'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
-import SecurityIcon from '@mui/icons-material/Security'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import KeyIcon from '@mui/icons-material/Key'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -61,7 +60,6 @@ const systemMenuItems: NavItem[] = [
     { label: '部门管理', path: '/system/department', icon: GroupsIcon, color: '#10b981' },
     { label: '角色管理', path: '/system/role', icon: AdminPanelSettingsIcon, color: '#8b5cf6' },
     { label: '权限管理', path: '/system/permission', icon: KeyIcon, color: '#ec4899' },
-    { label: '策略管理', path: '/system/abac', icon: SecurityIcon, color: '#f59e0b' },
 ]
 
 export default function Layout(): JSX.Element {

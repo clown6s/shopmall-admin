@@ -32,6 +32,9 @@ export const createEmployeeApi = (data: CreateEmployeeForm) =>
 export const updateEmployeeApi = (id: number, data: CreateEmployeeForm) =>
     request.put<IEmployee>(`/employee/${id}`, data)
 
-// TODO: 后端暂未实现 DELETE /api/employee/:id 接口
+/** @deprecated 后端暂未实现员工删除接口，请勿使用 */
 export const deleteEmployeeApi = (id: number) =>
     request.delete<null>(`/employee/${id}`)
+
+export const resetPasswordApi = (id: number, newPassword: string) =>
+    request.put<null>(`/employee/${id}/password`, { newPassword })

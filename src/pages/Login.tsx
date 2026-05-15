@@ -1,5 +1,5 @@
 // src/pages/Login.tsx
-import { type JSX, useState } from 'react'
+import { type JSX, useState, useEffect } from 'react'
 import {
     TextField,
     Button,
@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { loginApi } from '../api/employee'
 import type { EmployeeInfo, LoginResp } from '../types/employee'
+import useUserStore from '../store/useUserStore'
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined'
@@ -34,12 +35,41 @@ function isEmployeeInfo(data: unknown): data is EmployeeInfo {
 
 export default function Login(): JSX.Element {
     const navigate = useNavigate()
+    const userInfo = useUserStore((s) => s.userInfo)
+
+    // P1#23: 已登录用户访问 /login 自动重定向到首页
+    useEffect(() => {
+        if (userInfo) {
+            navigate('/', { replace: true })
+        }
+    }, [userInfo, navigate])
 
     const [mobile, setPhone] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // P2#51: Login 专属动画 keyframes（从全局 CSS 移至此处）
+    const loginKeyframes = `
+        @keyframes loginFloatOrb1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -40px) scale(1.1); }
+            50% { transform: translate(-20px, -60px) scale(0.95); }
+            75% { transform: translate(40px, -20px) scale(1.05); }
+        }
+        @keyframes loginFloatOrb2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-40px, 20px) scale(0.95); }
+            50% { transform: translate(30px, 50px) scale(1.1); }
+            75% { transform: translate(-20px, 30px) scale(1); }
+        }
+        @keyframes loginFloatOrb3 {
+            0%, 100% { transform: translate(0, 0) scale(1.05); }
+            33% { transform: translate(50px, -30px) scale(0.95); }
+            66% { transform: translate(-30px, 40px) scale(1.1); }
+        }
+    `
 
     const handleLogin = async () => {
         setError('')
@@ -75,9 +105,11 @@ export default function Login(): JSX.Element {
     }
 
     return (
-        <Box
-            sx={{
-                minHeight: '100vh',
+        <>
+            <style>{loginKeyframes}</style>
+            <Box
+                sx={{
+                    minHeight: '100vh',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -97,7 +129,7 @@ export default function Login(): JSX.Element {
                     width: 300, height: 300, borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)',
                     filter: 'blur(60px)',
-                    animation: 'floatOrb1 12s ease-in-out infinite',
+                    animation: 'loginFloatOrb1 12s ease-in-out infinite',
                 }} />
                 {/* Orb 2 - Purple */}
                 <Box sx={{
@@ -105,7 +137,7 @@ export default function Login(): JSX.Element {
                     width: 350, height: 350, borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(139,92,246,0.25) 0%, transparent 70%)',
                     filter: 'blur(70px)',
-                    animation: 'floatOrb2 15s ease-in-out infinite',
+                    animation: 'loginFloatOrb2 15s ease-in-out infinite',
                 }} />
                 {/* Orb 3 - Cyan accent */}
                 <Box sx={{
@@ -113,7 +145,7 @@ export default function Login(): JSX.Element {
                     width: 200, height: 200, borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(34,211,238,0.2) 0%, transparent 70%)',
                     filter: 'blur(50px)',
-                    animation: 'floatOrb3 10s ease-in-out infinite',
+                    animation: 'loginFloatOrb3 10s ease-in-out infinite',
                 }} />
                 {/* Orb 4 - Pink */}
                 <Box sx={{
@@ -121,7 +153,7 @@ export default function Login(): JSX.Element {
                     width: 180, height: 180, borderRadius: '50%',
                     background: 'radial-gradient(circle, rgba(244,114,182,0.15) 0%, transparent 70%)',
                     filter: 'blur(40px)',
-                    animation: 'floatOrb2 18s ease-in-out infinite',
+                    animation: 'loginFloatOrb2 18s ease-in-out infinite',
                 }} />
                 {/* Grid pattern overlay */}
                 <Box sx={{
@@ -337,5 +369,6 @@ export default function Login(): JSX.Element {
                 </Box>
             </Paper>
         </Box>
+        </>
     )
 }

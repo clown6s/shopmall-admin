@@ -12,11 +12,19 @@ import {
     Alert,
     Switch,
     FormControlLabel,
+    Divider,
+    Collapse,
+    InputAdornment,
+    IconButton,
 } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import LockResetIcon from '@mui/icons-material/LockReset'
 import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
 import type { IDepartment } from '../../types/department'
 import type { IRole } from '../../types/role'
-import { isValidUrl } from '../../utils/validators'
+import { isValidUrl, isValidPassword, PASSWORD_HINT } from '../../utils/validators'
 import { DIALOG_PAPER_SLOT_PROPS } from '../../utils/dialog'
 
 interface EmployeeDialogProps {
@@ -29,6 +37,7 @@ interface EmployeeDialogProps {
     submitting: boolean
     onFormChange: (form: CreateEmployeeForm) => void
     onSubmit: () => void
+    onResetPassword?: (empId: number, newPassword: string) => Promise<void>
     onClose: () => void
 }
 
@@ -50,19 +59,51 @@ export function EmployeeDialog({
     submitting,
     onFormChange,
     onSubmit,
+    onResetPassword,
     onClose,
 }: EmployeeDialogProps): JSX.Element {
     const isEditMode = Boolean(editingEmployee)
 
     const [touched, setTouched] = useState<Record<string, boolean>>({})
+    const [resetOpen, setResetOpen] = useState(false)
+    const [newPwd, setNewPwd] = useState('')
+    const [showPwd, setShowPwd] = useState(false)
+    const [resetting, setResetting] = useState(false)
+    const [resetError, setResetError] = useState('')
+    const [resetSuccess, setResetSuccess] = useState(false)
 
     useEffect(() => {
-        if (open) setTouched({});
-    }, [open]);
+        if (open) {
+            setTouched({})
+            setResetOpen(false)
+            setNewPwd('')
+            setShowPwd(false)
+            setResetting(false)
+            setResetError('')
+            setResetSuccess(false)
+        }
+    }, [open])
 
     const nameError = touched.realName && !formData.realName?.trim()
     const phoneError = touched.phone && (!formData.phone?.trim() || !/^1[3-9]\d{9}$/.test(formData.phone))
     const avatarError = touched.avatar && formData.avatar !== '' && formData.avatar !== undefined && !isValidUrl(formData.avatar)
+    const pwdError = newPwd !== '' && !isValidPassword(newPwd)
+
+    const handleResetPassword = async () => {
+        if (!editingEmployee || !newPwd || pwdError || !onResetPassword) return
+        try {
+            setResetting(true)
+            setResetError('')
+            setResetSuccess(false)
+            await onResetPassword(editingEmployee.id, newPwd)
+            setResetSuccess(true)
+            setNewPwd('')
+        } catch (err: unknown) {
+            setResetError(err instanceof Error ? err.message : '重置失败')
+        } finally {
+            setResetting(false)
+        }
+    }
 
     return (
         <Dialog
@@ -230,6 +271,76 @@ export function EmployeeDialog({
                         rows={2}
                         {...fieldProps}
                     />
+
+                    {/* 编辑模式：重置密码 */}
+                    {isEditMode && onResetPassword && (
+                        <>
+                            <Divider />
+                            <Box>
+                                <Button
+                                    size="small"
+                                    startIcon={<LockResetIcon />}
+                                    endIcon={<ExpandMoreIcon sx={{ transform: resetOpen ? 'rotate(180deg)' : 'none', transition: '0.2s' }} />}
+                                    onClick={() => setResetOpen(!resetOpen)}
+                                    sx={{ color: '#64748b', textTransform: 'none', px: 0 }}
+                                >
+                                    重置密码
+                                </Button>
+                                <Collapse in={resetOpen} timeout="auto">
+                                    <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                        {resetSuccess && (
+                                            <Alert severity="success" sx={{ borderRadius: '10px' }} onClose={() => setResetSuccess(false)}>
+                                                密码重置成功
+                                            </Alert>
+                                        )}
+                                        {resetError && (
+                                            <Alert severity="error" sx={{ borderRadius: '10px' }} onClose={() => setResetError('')}>
+                                                {resetError}
+                                            </Alert>
+                                        )}
+                                        <TextField
+                                            label="新密码"
+                                            type={showPwd ? 'text' : 'password'}
+                                            value={newPwd}
+                                            onChange={(e) => setNewPwd(e.target.value)}
+                                            error={pwdError}
+                                            helperText={pwdError ? PASSWORD_HINT : '留空则不修改'}
+                                            placeholder={PASSWORD_HINT}
+                                            slotProps={{
+                                                htmlInput: { autoComplete: 'new-password', maxLength: 64 },
+                                                input: {
+                                                    endAdornment: (
+                                                        <InputAdornment position="end">
+                                                            <IconButton size="small" onClick={() => setShowPwd(!showPwd)} edge="end">
+                                                                {showPwd ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                                                            </IconButton>
+                                                        </InputAdornment>
+                                                    ),
+                                                },
+                                            }}
+                                            {...fieldProps}
+                                        />
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            onClick={handleResetPassword}
+                                            disabled={resetting || !newPwd || pwdError}
+                                            sx={{
+                                                alignSelf: 'flex-start',
+                                                borderRadius: '10px',
+                                                borderColor: '#f59e0b',
+                                                color: '#f59e0b',
+                                                '&:hover': { borderColor: '#d97706', background: '#fffbeb' },
+                                                '&.Mui-disabled': { borderColor: '#e2e8f0', color: '#94a3b8' },
+                                            }}
+                                        >
+                                            {resetting ? <CircularProgress size={16} /> : '确认重置'}
+                                        </Button>
+                                    </Box>
+                                </Collapse>
+                            </Box>
+                        </>
+                    )}
                 </Box>
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 3 }}>

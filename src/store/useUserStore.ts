@@ -1,10 +1,5 @@
 // src/store/useUserStore.ts
-// 已移除 localStorage 存储 token
-// 用户信息与 token 改由 httpOnly cookie 管理（后端配合）
-// 前端仅保留 userInfo 的内存状态
-
 import { create } from "zustand";
-import { invalidateAuthCache } from "../router/RequireAuth";
 
 export interface UserInfo {
     id: number
@@ -17,10 +12,31 @@ export interface UserInfo {
     position: string
 }
 
+// ── 认证缓存（放在这里避免循环依赖） ──
+const CACHE_TTL = 5_000
+let lastValidTime = 0
+let cachedResult: boolean | null = null
+
+export function invalidateAuthCache() {
+    lastValidTime = 0
+    cachedResult = null
+}
+
+export function getAuthCache() {
+    return { cachedResult, lastValidTime, CACHE_TTL }
+}
+
+export function setAuthCacheSuccess() {
+    cachedResult = true
+    lastValidTime = Date.now()
+}
+
+// ── Store ──
 interface UserState {
     userInfo: UserInfo | null
     menuPaths: string[]
     permissions: string[]
+    permissionSet: Set<string>
     setUserInfo: (user: UserInfo) => void
     fetchUserInfo: () => Promise<boolean>
     fetchMenuPaths: () => Promise<void>
@@ -32,62 +48,70 @@ const useUserStore = create<UserState>((set, get) => ({
     userInfo: null,
     menuPaths: [],
     permissions: [],
+    permissionSet: new Set<string>(),
 
     setUserInfo: (userInfo) => {
+        console.log('[UserStore] setUserInfo:', userInfo?.realName, userInfo?.id)
         set({ userInfo })
     },
 
-    // 从后端 /user/me 获取当前用户信息（用于路由守卫验证）
-    // 注意：request.ts 的响应拦截器已自动解包 { code, data } 格式
-    // 当 code === 200 时 res.data 已经是内层 data（即 UserInfo），不再有 code 字段
     fetchUserInfo: async () => {
+        console.log('[UserStore] fetchUserInfo 开始')
         try {
             const request = (await import('../api/request')).default
+            console.log('[UserStore] request 模块加载成功')
             const [userRes, menusRes] = await Promise.all([
                 request.get<UserInfo>('/user/me'),
                 request.get<{ menus: string[]; permissions: string[] }>('/user/menus'),
             ])
+            console.log('[UserStore] /user/me:', JSON.stringify(userRes.data).substring(0, 200))
+            console.log('[UserStore] /user/menus:', JSON.stringify(menusRes.data).substring(0, 200))
+
             const userInfo = userRes.data
             const menusData = menusRes.data
             if (userInfo && typeof userInfo.id === 'number') {
+                const perms = menusData?.permissions || []
+                console.log('[UserStore] 登录成功, id:', userInfo.id, '权限数:', perms.length)
                 set({
                     userInfo,
                     menuPaths: menusData?.menus || [],
-                    permissions: menusData?.permissions || [],
+                    permissions: perms,
+                    permissionSet: new Set(perms),
                 })
                 return true
             }
-            set({ userInfo: null, menuPaths: [], permissions: [] })
+            console.warn('[UserStore] 用户信息无效:', userInfo)
+            set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() })
             return false
-        } catch {
-            set({ userInfo: null, menuPaths: [], permissions: [] })
+        } catch (err) {
+            console.error('[UserStore] fetchUserInfo 失败:', err)
+            set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() })
             return false
         }
     },
 
-    // 从后端 /user/menus 获取当前用户的菜单权限路径 + 按钮权限keys
     fetchMenuPaths: async () => {
         try {
             const res = await (await import('../api/request')).default.get<{ menus: string[]; permissions: string[] }>('/user/menus')
             const data = res.data
-            set({ menuPaths: data?.menus || [], permissions: data?.permissions || [] })
+            const perms = data?.permissions || []
+            set({ menuPaths: data?.menus || [], permissions: perms, permissionSet: new Set(perms) })
         } catch {
-            set({ menuPaths: [], permissions: [] })
+            set({ menuPaths: [], permissions: [], permissionSet: new Set<string>() })
         }
     },
 
     hasPermission: (key: string) => {
-        return get().permissions.includes(key)
+        return get().permissionSet.has(key)
     },
 
     logout: () => {
-        // 如果已登出，不再重复执行
+        console.log('[UserStore] logout')
         if (useUserStore.getState().userInfo === null) {
             return;
         }
-        // 通知后端清除 session/缓存（fire-and-forget，不阻塞跳转）
         fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
-        set({ userInfo: null, menuPaths: [], permissions: [] });
+        set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() });
         invalidateAuthCache();
         window.location.href = '/login';
     },

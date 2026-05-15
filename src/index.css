@@ -226,26 +226,6 @@ h6 { font-size: 0.875rem; }
   66% { transform: translateY(10px) scale(0.98); }
 }
 
-@keyframes floatOrb1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(30px, -40px) scale(1.1); }
-  50% { transform: translate(-20px, -60px) scale(0.95); }
-  75% { transform: translate(40px, -20px) scale(1.05); }
-}
-
-@keyframes floatOrb2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  25% { transform: translate(-40px, 20px) scale(0.95); }
-  50% { transform: translate(30px, 50px) scale(1.1); }
-  75% { transform: translate(-20px, 30px) scale(1); }
-}
-
-@keyframes floatOrb3 {
-  0%, 100% { transform: translate(0, 0) scale(1.05); }
-  33% { transform: translate(50px, -30px) scale(0.95); }
-  66% { transform: translate(-30px, 40px) scale(1.1); }
-}
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

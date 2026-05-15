@@ -1,35 +1,22 @@
 // src/router/RequireAuth.tsx
-// 路由守卫：验证 token 有效性（不再依赖 localStorage）
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { fetchCurrentUser, setOnUnauthorized } from '../api/request'
-import { CircularProgress, Box, Typography, Button } from '@mui/material'
-import useUserStore from '../store/useUserStore'
-
-// session 级缓存：10 秒内不重复请求（TTL 不宜过长，避免退出后缓存误放行）
-const CACHE_TTL = 10_000
-let lastValidTime = 0
-let cachedResult: boolean | null = null
-
-export function invalidateAuthCache() {
-    lastValidTime = 0
-    cachedResult = null
-}
+import { setOnUnauthorized } from '../api/request'
+import { Typography, Button } from '@mui/material'
+import useUserStore, { invalidateAuthCache, getAuthCache, setAuthCacheSuccess } from '../store/useUserStore'
 
 export default function RequireAuth() {
     const navigate = useNavigate()
-    const [isValidating, setIsValidating] = useState(true)
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const [networkError, setNetworkError] = useState(false)
-    const [retryCount, setRetryCount] = useState(0)
+    const [step, setStep] = useState('init')
+    const [result, setResult] = useState('')
     const location = useLocation()
-    const setUserInfo = useUserStore((s) => s.setUserInfo)
-    const fetchMenuPaths = useUserStore((s) => s.fetchMenuPaths)
+    const fetchUserInfo = useUserStore((s) => s.fetchUserInfo)
     const menuPaths = useUserStore((s) => s.menuPaths)
 
-    // 设置 401 未授权回调
     useEffect(() => {
         setOnUnauthorized(() => {
+            setStep('unauthorized')
+            setResult('onUnauthorized triggered')
             invalidateAuthCache()
             useUserStore.setState({ userInfo: null })
             navigate('/login', { replace: true })
@@ -41,79 +28,83 @@ export default function RequireAuth() {
         let cancelled = false
 
         const now = Date.now()
-        // 使用缓存，避免高频导航重复请求
-        if (cachedResult !== null && now - lastValidTime < CACHE_TTL) {
-            if (!cancelled) {
-                setIsAuthenticated(cachedResult)
-                setIsValidating(false)
-            }
+        const cache = getAuthCache()
+        if (cache.cachedResult !== null && now - cache.lastValidTime < cache.CACHE_TTL) {
+            setStep('cached')
+            setResult(`cached: ${cache.cachedResult}`)
             return
         }
 
+        setStep('validating')
+        setResult('calling fetchUserInfo...')
+
         const validate = async () => {
-            const result = await fetchCurrentUser()
-            if (result === null) {
-                // 401 - 未认证
+            try {
+                const ok = await fetchUserInfo()
                 if (!cancelled) {
-                    cachedResult = false
-                    lastValidTime = Date.now()
-                    setIsAuthenticated(false)
-                    setIsValidating(false)
+                    if (ok) setAuthCacheSuccess()
+                    setStep(ok ? 'authenticated' : 'not-authenticated')
+                    setResult(`fetchUserInfo returned: ${ok}`)
                 }
-                return
-            }
-            if (result.isNetworkError) {
-                // 网络错误 - 显示错误状态
+            } catch (err) {
                 if (!cancelled) {
-                    setNetworkError(true)
-                    setIsValidating(false)
+                    setStep('error')
+                    setResult(String(err))
                 }
-                return
-            }
-            if (!cancelled) {
-                // 同步用户信息到 store
-                if (result.data && typeof result.data.id === 'number') {
-                    setUserInfo(result.data)
-                    cachedResult = true
-                    // 获取菜单权限路径，用于侧边栏过滤
-                    fetchMenuPaths()
-                } else {
-                    cachedResult = false
-                }
-                lastValidTime = Date.now()
-                setIsAuthenticated(cachedResult)
-                setIsValidating(false)
             }
         }
         validate()
         return () => { cancelled = true }
-    }, [setUserInfo, fetchMenuPaths, navigate, retryCount])
+    }, [fetchUserInfo, navigate])
 
-    if (isValidating) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-                <CircularProgress />
-            </Box>
-        )
-    }
-
-    if (networkError) {
-        return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 8, gap: 2 }}>
-                <Typography color="error">网络连接失败，请检查网络后重试</Typography>
-                <Button variant="contained" onClick={() => { setNetworkError(false); invalidateAuthCache(); setRetryCount(c => c + 1) }}>重试</Button>
-            </Box>
-        )
-    }
-
-    // menuPaths 非空时，检查当前路由是否在允许的菜单路径中（前缀匹配）
-    if (menuPaths.length > 0) {
-        const pathname = location.pathname === '/' ? '/' : location.pathname
-        const allowed = menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
-        if (!allowed) {
-            return <Navigate to="/" replace />
+    // 验证完成 → 已登录
+    // 注意：pathname === '/'（仪表盘首页）默认允许访问，不受 menuPaths 限制
+    if (step === 'authenticated' || step === 'cached') {
+        if (menuPaths.length > 0 && location.pathname !== '/') {
+            const pathname = location.pathname
+            const allowed = menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+            if (!allowed) {
+                return <Navigate to="/" replace />
+            }
         }
+        return <Outlet />
     }
 
-    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
+    // 验证完成 → 未登录
+    if (step === 'not-authenticated' || step === 'unauthorized') {
+        return <Navigate to="/login" replace />
+    }
+
+    // 验证中 / 出错 → 始终显示内容，不白屏
+    return (
+        <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', minHeight: '100vh', background: '#0f172a',
+            color: '#e2e8f0', fontFamily: 'Consolas, monospace', padding: 40,
+        }}>
+            <Typography sx={{ color: '#89b4fa', fontWeight: 700, fontSize: 18, mb: 2 }}>
+                ShopMall Admin
+            </Typography>
+            <Typography sx={{ color: '#94a3b8', mb: 1 }}>
+                Step: <span style={{ color: '#89b4fa' }}>{step}</span>
+            </Typography>
+            <Typography sx={{ color: '#64748b', mb: 3, fontSize: 13 }}>
+                {result}
+            </Typography>
+            {step === 'error' && (
+                <Button
+                    variant="contained"
+                    onClick={() => { invalidateAuthCache(); setStep('init') }}
+                >
+                    Retry
+                </Button>
+            )}
+            <Button
+                sx={{ mt: 2, color: '#64748b' }}
+                onClick={() => navigate('/login')}
+            >
+                Go to Login
+            </Button>
+        </div>
+    )
 }

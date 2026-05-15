@@ -21,9 +21,9 @@ export const isValidEmail = (email: string): boolean => {
     return EMAIL_REGEX.test(email);
 };
 
-// 密码强度校验：至少 6 位，且包含大小写字母和数字
+// 密码强度校验：至少 8 位，且包含大小写字母和数字
 export const isValidPassword = (password: string): boolean => {
-    return typeof password === 'string' && password.length >= 6 &&
+    return typeof password === 'string' && password.length >= 8 &&
         /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
 };
-export const PASSWORD_HINT = '密码至少6位，需包含大写字母、小写字母和数字';
+export const PASSWORD_HINT = '密码至少8位，需包含大写字母、小写字母和数字';

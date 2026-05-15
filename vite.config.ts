@@ -60,7 +60,7 @@ export default defineConfig({
     },
     // 开启 gzip 压缩（需要服务器支持）
     // brotliSize: false, // Vite 新版本已移除该选项
-    // 消除打包大小警告
-    chunkSizeWarningLimit: 1000,
+    // P2#47: 降低 chunk 大小警告阈值
+    chunkSizeWarningLimit: 500,
   },
 })

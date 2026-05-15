@@ -16,13 +16,14 @@ export const setOnUnauthorized = (fn: (() => void) | null) => {
 
 // --- Refresh Token 逻辑 ---
 let isRefreshing = false
+// P2#56: 简化 resolve 签名，去掉冗余的 token 参数
 let pendingRequests: Array<{
-    resolve: (token: string) => void
+    resolve: () => void
     reject: (err: unknown) => void
 }> = []
 
-function onRefreshSuccess(newToken: string) {
-    pendingRequests.forEach(({ resolve }) => resolve(newToken))
+function onRefreshSuccess() {
+    pendingRequests.forEach(({ resolve }) => resolve())
     pendingRequests = []
 }
 
@@ -39,13 +40,15 @@ function onRefreshFailure(err: unknown) {
  */
 async function tryRefreshToken(): Promise<boolean> {
     try {
-        // 用独立的 axios 实例，不走拦截器，避免循环
+        console.log('[API] tryRefreshToken: POST /api/auth/refresh')
         const res = await axios.post('/api/auth/refresh', null, {
             withCredentials: true,
             timeout: 5000,
         })
+        console.log('[API] tryRefreshToken 结果:', res.status)
         return res.status === 200
-    } catch {
+    } catch (err) {
+        console.error('[API] tryRefreshToken 失败:', (err as any)?.response?.status, (err as any)?.message)
         return false
     }
 }
@@ -92,8 +95,9 @@ service.interceptors.request.use((config) => {
         const csrfToken = getCSRFToken()
         if (csrfToken) {
             config.headers['X-XSRF-TOKEN'] = csrfToken
-        } else if (import.meta.env.DEV) {
-            console.warn('[CSRF] xsrf-token cookie not found for', config.method, config.url)
+        } else {
+            // P1#21: 生产环境也记录 CSRF 缺失日志，便于排查问题
+            console.error('[CSRF] xsrf-token cookie missing for', config.method, config.url, '- request may be rejected by server')
         }
     }
     return config
@@ -127,17 +131,21 @@ service.interceptors.response.use(
     },
     async (error: AxiosError<ApiResponse<unknown>>) => {
         const status = error.response?.status
+        const url = error.config?.url
+        console.error(`[API] 响应错误: ${error.config?.method?.toUpperCase()} ${url} → ${status}`, error.message)
         const originalRequest = error.config
 
         if (status === 401 && originalRequest) {
             // 对 /auth/refresh 本身返回 401，直接走未授权逻辑
             if (originalRequest.url === '/auth/refresh') {
+                console.error('[API] /auth/refresh 返回401 → 执行 onRefreshFailure')
                 onRefreshFailure(error)
                 return Promise.reject(error)
             }
 
             // 已有刷新请求在进行中，排队等待
             if (isRefreshing) {
+                console.log('[API] 已有refresh在进行, 排队等待:', originalRequest.url)
                 return new Promise<AxiosResponse>((resolve, reject) => {
                     pendingRequests.push({
                         resolve: () => resolve(service(originalRequest!)),
@@ -146,13 +154,14 @@ service.interceptors.response.use(
                 })
             }
 
+            console.log('[API] 收到401, 开始刷新token...')
             isRefreshing = true
             try {
                 const ok = await tryRefreshToken()
 
                 if (ok) {
                     // 后端已通过 Set-Cookie 设置了新的 auth_token，直接重试原请求
-                    onRefreshSuccess('')
+                    onRefreshSuccess()
                     return service(originalRequest)
                 } else {
                     // refresh token 也过期了，走登出逻辑
