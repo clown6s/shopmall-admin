@@ -58,11 +58,12 @@ export default function RequireAuth() {
     }, [fetchUserInfo, navigate])
 
     // 验证完成 → 已登录
-    // 注意：pathname === '/'（仪表盘首页）默认允许访问，不受 menuPaths 限制
+    // pathname === '/'（仪表盘首页）默认允许访问，不受 menuPaths 限制
     if (step === 'authenticated' || step === 'cached') {
-        if (menuPaths.length > 0 && location.pathname !== '/') {
+        if (location.pathname !== '/') {
             const pathname = location.pathname
-            const allowed = menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+            // menuPaths 为空时，仅允许访问首页（后端仍有权限校验作为最终防线）
+            const allowed = menuPaths.length === 0 || menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
             if (!allowed) {
                 return <Navigate to="/" replace />
             }

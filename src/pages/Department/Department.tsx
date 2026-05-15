@@ -112,7 +112,7 @@ export default function Department(): JSX.Element {
             setDeleteError('')
             await deleteDepartmentApi(deleteTarget.deptId)
             setDeleteTarget(null)
-            fetchData()
+            await fetchData()
         } catch (err: unknown) {
             setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {

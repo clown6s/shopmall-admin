@@ -36,20 +36,25 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
     useEffect(() => {
         if (!open || !roleId) return
         let cancelled = false
-        setLoading(true)
-        setError('')
-        Promise.all([
-            getPermissionsApi().then((r) => r.data as IPermission[]),
-            getRolePermissionIdsApi(roleId).then((r) => r.data as number[]),
-        ])
-            .then(([perms, ids]) => {
+        const load = async () => {
+            setLoading(true)
+            setError('')
+            try {
+                const [permsRes, idsRes] = await Promise.all([
+                    getPermissionsApi(),
+                    getRolePermissionIdsApi(roleId),
+                ])
                 if (!cancelled) {
-                    setPermissions(perms)
-                    setCheckedIds(new Set(ids))
+                    setPermissions(permsRes.data as IPermission[])
+                    setCheckedIds(new Set(idsRes.data as number[]))
                 }
-            })
-            .catch(() => { if (!cancelled) setError('加载权限数据失败') })
-            .finally(() => { if (!cancelled) setLoading(false) })
+            } catch {
+                if (!cancelled) setError('加载权限数据失败')
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
+        }
+        load()
         return () => { cancelled = true }
     }, [open, roleId])
 

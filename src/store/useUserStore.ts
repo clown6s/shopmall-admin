@@ -51,27 +51,21 @@ const useUserStore = create<UserState>((set, get) => ({
     permissionSet: new Set<string>(),
 
     setUserInfo: (userInfo) => {
-        console.log('[UserStore] setUserInfo:', userInfo?.realName, userInfo?.id)
         set({ userInfo })
     },
 
     fetchUserInfo: async () => {
-        console.log('[UserStore] fetchUserInfo 开始')
         try {
             const request = (await import('../api/request')).default
-            console.log('[UserStore] request 模块加载成功')
             const [userRes, menusRes] = await Promise.all([
                 request.get<UserInfo>('/user/me'),
                 request.get<{ menus: string[]; permissions: string[] }>('/user/menus'),
             ])
-            console.log('[UserStore] /user/me:', JSON.stringify(userRes.data).substring(0, 200))
-            console.log('[UserStore] /user/menus:', JSON.stringify(menusRes.data).substring(0, 200))
 
             const userInfo = userRes.data
             const menusData = menusRes.data
             if (userInfo && typeof userInfo.id === 'number') {
                 const perms = menusData?.permissions || []
-                console.log('[UserStore] 登录成功, id:', userInfo.id, '权限数:', perms.length)
                 set({
                     userInfo,
                     menuPaths: menusData?.menus || [],
@@ -105,12 +99,16 @@ const useUserStore = create<UserState>((set, get) => ({
         return get().permissionSet.has(key)
     },
 
-    logout: () => {
-        console.log('[UserStore] logout')
+    logout: async () => {
         if (useUserStore.getState().userInfo === null) {
             return;
         }
-        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+        try {
+            const request = (await import('../api/request')).default
+            await request.post('/auth/logout')
+        } catch {
+            // logout 失败不阻塞前端状态清理
+        }
         set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() });
         invalidateAuthCache();
         window.location.href = '/login';

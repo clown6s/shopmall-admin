@@ -1,9 +1,27 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// 生产环境移除 console/debugger 语句
+function dropConsole(): Plugin {
+  return {
+    name: 'drop-console',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_, bundle) {
+      for (const chunk of Object.values(bundle)) {
+        if (chunk.type === 'chunk') {
+          chunk.code = chunk.code
+            .replace(/console\.(log|debug|info|warn|error)\((?:[^)(]|\((?:[^)(]|\([^)]*\))*\))*\);?/g, '')
+            .replace(/debugger;?/g, '')
+        }
+      }
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), dropConsole()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -28,14 +46,6 @@ export default defineConfig({
     sourcemap: false,
     // 使用 esbuild 压缩（Vite 默认，更快）
     minify: 'esbuild',
-    // Terser 压缩选项（如果需要更小体积，可以安装 terser）
-    // minify: 'terser',
-    // terserOptions: {
-    //   compress: {
-    //     drop_console: true,
-    //     drop_debugger: true,
-    //   },
-    // } as any,
     rollupOptions: {
       output: {
         // 静态资源分类打包
