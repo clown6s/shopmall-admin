@@ -1,150 +1,108 @@
 # ShopMall Admin
 
-> 基于 React 19 + MUI + Zustand + TypeScript 构建的电商后台管理系统前端。
+ShopMall 后台管理系统的前端项目，基于 React 19 + TypeScript + MUI 9 + Zustand 5 构建。
+
+这是 [shopmall](../shopmall) 后端的前端配套项目。
 
 ---
 
 ## 技术栈
 
-| 类别 | 框架 / 库 | 版本 |
-|------|---------|-----|
-| 核心框架 | [React](https://react.dev) | 19.2.4 |
-| 语言 | [TypeScript](https://www.typescriptlang.org) | 6.0.2 |
-| 构建工具 | [Vite](https://vitejs.dev) | 8.0.4 |
-| UI 组件库 | [MUI (Material-UI)](https://mui.com) | 9.0.0 |
-| 树形组件 | @mui/x-tree-view | 9.0.2 |
-| 状态管理 | [Zustand](https://zustand-demo.pmnd.rs) | 5.0.12 |
-| 路由 | [react-router-dom](https://reactrouter.com) | 7.14.1 |
-| HTTP 客户端 | [axios](https://axios-http.com) | 1.15.0 |
-| 大整数处理 | [json-bigint](https://www.npmjs.com/package/json-bigint) | 1.0.0 |
+| 类别 | 技术 | 版本 |
+|------|------|------|
+| 核心框架 | [React](https://react.dev) | 19 |
+| 语言 | [TypeScript](https://www.typescriptlang.org) | 6 |
+| 构建工具 | [Vite](https://vitejs.dev) | 8 |
+| UI 组件库 | [MUI](https://mui.com) | 9 |
+| 状态管理 | [Zustand](https://zustand-demo.pmnd.rs) | 5 |
+| 路由 | [react-router-dom](https://reactrouter.com) | 7 |
+| HTTP 客户端 | [axios](https://axios-http.com) | 1.16 |
+| 大整数处理 | [json-bigint](https://www.npmjs.com/package/json-bigint) | 1.0 |
 
 ---
 
-## 框架选型亮点
+## 功能模块
 
-### 🖥️ React 19 + TypeScript —— 类型安全的前端核心
+| 模块 | 路由 | 说明 |
+|------|------|------|
+| 登录 | `/login` | 手机号 + 密码登录，CSRF 保护 |
+| 首页 | `/` | 数据概览仪表盘 |
+| 品牌管理 | `/product/brand` | 品牌列表、搜索、增删改 |
+| 商品分类 | `/product/category` | 三级分类树形展示与编辑 |
+| 员工管理 | `/system/employee` | 员工 CRUD、部门归属 |
+| 部门管理 | `/system/department` | 部门树 CRUD |
+| 角色管理 | `/system/role` | 角色 CRUD、菜单权限分配 |
+| 菜单管理 | `/system/menu` | 菜单树 CRUD、路由与图标配置 |
+| 权限管理 | `/system/permission` | 权限码 CRUD、与菜单角色联动 |
 
-使用 React 19 搭配 TypeScript 6 打造类型安全的前端应用：
-
-- **React 19 新特性**：支持 `use` API 简化异步数据读取，改进的批量更新策略减少不必要的重渲染
-- **TypeScript 6 类型推导**：全项目无 `any` 类型，接口响应、DTO、状态类型均有完整类型定义，开发时 IDE 自动补全，运行时零类型开销
-- **Vite 8 极速开发体验**：基于 ESM 的 HMR，开发环境秒级热更新，生产构建使用 Rollup 智能分包
-
----
-
-### 🎨 MUI v9 —— Material Design 3 实现
-
-MUI（Material-UI）是 React 生态最成熟的组件库，提供开箱即用的企业级 UI：
-
-- **Material Design 3 规范**：遵循 MD3 设计语言，组件外观现代、专业，适合电商管理后台
-- **主题系统深度定制**：覆盖色彩系统、圆角、阴影、间距全部 token，支持亮/暗模式切换（项目未来可扩展）
-- **丰富组件生态**：表格、树形、弹窗、表单控件、导航栏、侧边栏、卡片等，无需重复造轮子
-- **TreeView 树形组件**：用于商品三级分类展示，支持展开/收起、节点操作按钮，行级 hover 效果流畅
+布局采用**可折叠侧边栏 + 顶部栏**结构，菜单根据用户角色动态渲染。
 
 ---
 
-### 📦 Zustand v5 —— 轻量级状态管理
+## 认证与安全
 
-Zustand 是 React 状态管理库中体积极小（压缩后 < 1KB）但功能完备的代表：
+Token 全部由后端通过 **httpOnly Cookie** 管理，前端不接触 Token 原文。
 
-- **去中心化 Store**：每个 Store 独立定义，无需嵌套 Provider 树，组件按需订阅，`useStore(state => state.xxx)` 直取所需字段，最大限度减少不必要的重渲染
-- **中间件扩展**：内置 `persist`（持久化到 localStorage）、`devtools`、`subscribeWithSelector` 等中间件
-- **比 Redux 少 10x 代码量**：无需 Action/Reducer/Dispatch 样板，直接 `set({ ... })` 更新状态
+### 登录流程
 
----
+```
+访问系统 → 路由守卫检查登录状态
+  ├─ 未登录 → GET /api/csrf/token 获取初始 CSRF Cookie
+  │           → 显示登录页，输入手机号密码
+  │           → POST /api/employee/login（携带 CSRF Token）
+  │           → 后端设置 auth_token + refresh_token Cookie
+  │
+  └─ 已登录 → 调用 /api/user/me 验证会话
+        ├─ 200 → 进入系统
+        └─ 401 → 尝试 Refresh Token 续期
+              ├─ 成功 → 重试原请求（无感刷新）
+              └─ 失败 → 跳转登录页
+```
 
-### 🔀 react-router-dom v7 —— 嵌套路由与权限守卫
+### 安全措施
 
-项目使用 React Router v7 管理前端路由：
-
-- **嵌套路由（Outlet）**：Layout 组件作为父路由，子页面作为子路由，sidebar + content 布局天然解耦
-- **权限守卫（RequireAuth）**：未登录访问受保护路由时自动重定向到 `/login`，登录成功后回跳原始页面，体验流畅
-- **Vite 懒加载**：`React.lazy()` + `Suspense` 按需加载各页面模块，首屏只加载必要 JS，减少白屏时间
-
----
-
-### 🌐 axios + json-bigint —— HTTP 层
-
-封装统一请求层，处理所有后端 API 通信：
-
-- **请求拦截器**：自动在 `Authorization` header 附加 `Bearer {token}`，无需在每个接口手动注入
-- **响应拦截器**：统一处理 401 未授权（跳转登录页），格式化错误提示；其余状态码透传给调用方
-- **json-bigint 大整数处理**：后端雪花算法生成的 64 位品牌 ID（> 2^53）在 JSON 解析时会丢失精度，`json-bigint` 自动将大整数转为字符串，完整保留精度，不出现显示为 `1.2345678901234e+15` 的 Bug
-- **Vite 代理配置**：开发环境 `/api` 前缀自动代理到 `http://localhost:7000`，规避跨域问题
-
----
-
-### 🛡️ 前端安全与权限码
-
-基于后端 RBAC 权限码实现按钮级显隐控制：
-
-- 用户登录后，服务端返回其拥有的所有权限码列表（如 `["product:brand:list", "product:brand:add"]`）
-- 前端按钮组件接收权限码 `code` prop，内部判断是否在权限码列表中，不在则 `display: none`
-- 配合后端接口层的权限校验，即使前端隐藏了按钮，直接调用 API 仍会被拦截，双重保险
+| 措施 | 说明 |
+|------|------|
+| CSRF 防护 | 生产环境写操作缺 Token 直接拦截，开发环境仅警告 |
+| Token 自动刷新 | 401 响应自动触发 Refresh Token，并发请求队列化 |
+| 按钮级权限 | 根据后端返回的权限码列表控制按钮显隐 |
+| ErrorBoundary | 全局错误边界 + window.onerror + unhandledrejection |
+| 生产构建 | sourcemap 关闭、console 全部剥离 |
+| 代码分割 | react / MUI / axios+zustand 分 chunk 加载 |
+| 大整数安全 | json-bigint 处理雪花 ID，避免 JavaScript 精度丢失 |
 
 ---
 
-## 页面与功能模块
-
-| 页面 | 路由 | 功能描述 |
-|------|------|----------|
-| **登录** | `/login` | 用户名密码登录，JWT Token 持久化到 localStorage |
-| **首页仪表盘** | `/` | 数据概览（后续可扩展统计图表） |
-| **品牌管理** | `/product/brand` | 品牌列表（分页、搜索、增删改），支持品牌-分类关联配置 |
-| **商品分类** | `/product/category` | 三级分类树形展示，父子节点增删改（TreeView） |
-| **用户管理** | `/system/users` | 用户 CRUD，数据范围过滤（本部门/本人/全部） |
-| **角色管理** | `/system/roles` | 角色 CRUD，分配菜单权限，分配数据权限范围 |
-| **菜单管理** | `/system/menus` | 菜单树增删改，含路由路径、权限码、图标、排序 |
-| **权限管理** | `/system/permissions` | 按钮级权限码展示，与菜单/角色联动 |
-
-布局采用 **侧边栏（可折叠）+ 顶部栏** 结构，菜单根据用户角色动态渲染，无权限菜单对用户不可见。
-
----
-
-## 项目架构
+## 项目结构
 
 ```
 shopmall-admin/
 ├── src/
-│   ├── api/                     # API 层（user / product / rbac / request）
-│   ├── assets/                  # 静态资源
+│   ├── api/                 # Axios 封装 + CSRF 拦截 + Token 刷新
+│   ├── assets/              # 静态资源（图标、样式）
 │   ├── components/
-│   │   ├── Layout/              # 侧边栏 + 顶部栏布局组件
-│   │   └── ...                  # 其他公共组件
-│   ├── pages/
-│   │   ├── Login/               # 登录页
-│   │   ├── Dashboard/           # 首页仪表盘
-│   │   ├── Product/             # 品牌管理
-│   │   ├── ProductCategory/     # 商品分类（树形）
-│   │   ├── Users/               # 用户管理
-│   │   ├── Role/                # 角色管理
-│   │   ├── Menu/                # 菜单管理
-│   │   └── Permission/          # 权限管理
-│   ├── router/                  # 路由守卫（RequireAuth）
-│   ├── store/                   # Zustand Store
-│   ├── types/                   # TypeScript 类型定义
-│   ├── App.tsx                  # 根组件
-│   └── main.tsx                 # 入口文件
+│   │   └── Layout/          # 侧边栏 + 顶部栏 + 内容区布局
+│   ├── pages/               # 各功能页面
+│   │   ├── Login/           # 登录页
+│   │   ├── Dashboard/       # 首页仪表盘
+│   │   ├── Product/         # 品牌管理
+│   │   ├── ProductCategory/ # 商品分类（树形）
+│   │   ├── Department/      # 部门管理
+│   │   ├── Employee/        # 员工管理
+│   │   ├── Role/            # 角色管理（含权限分配弹窗）
+│   │   ├── Menu/            # 菜单管理（树形）
+│   │   └── Permission/      # 权限管理
+│   ├── router/              # 路由配置 + RequireAuth 权限守卫
+│   ├── store/               # Zustand 状态管理（用户、菜单、权限）
+│   ├── types/               # TypeScript 类型定义
+│   ├── utils/               # 工具函数（表单校验等）
+│   ├── App.tsx
+│   └── main.tsx             # 入口（ErrorBoundary 包裹）
 ├── index.html
-├── vite.config.ts               # Vite 配置（含 /api 代理 → localhost:7000）
+├── vite.config.ts           # Vite 配置（/api 代理 → localhost:7000）
 ├── tsconfig.json
+├── eslint.config.js
 └── package.json
-```
-
----
-
-## 请求链路
-
-```
-用户打开应用
-  └─► RequireAuth 路由守卫检查 localStorage 中的 token
-        ├─► 无 token → 重定向到 /login
-        └─► 有 token
-              ├─► token 写入 axios 请求头 Authorization: Bearer {token}
-              └─► API 请求
-                    ├─► 200 → 数据展示
-                    ├─► 401 → 响应拦截器捕获，跳转 /login
-                    └─► 403/500 → Toast 提示错误信息
 ```
 
 ---
@@ -164,12 +122,18 @@ cd shopmall-admin
 # 安装依赖
 npm install
 
-# 开发模式启动（Vite 自动代理 /api → localhost:7000）
+# 开发模式（Vite 自动代理 /api → localhost:7000）
 npm run dev
+
 # 访问 http://localhost:5173
 ```
 
-登录页访问 `http://localhost:5173/login`，输入后端已注册的用户名密码即可进入后台。
+### 构建
+
+```bash
+npm run build
+# 产物在 dist/ 目录
+```
 
 ---
 
