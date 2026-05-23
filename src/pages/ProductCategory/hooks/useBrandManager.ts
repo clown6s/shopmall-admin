@@ -8,6 +8,7 @@ import {
     deleteBrandApi,
 } from '../../../api/product'
 import { getApiErrorMsg } from '../../../utils/errorHelper'
+import { isValidUrl } from '../../../utils/validators'
 import type { BrandDialogData, FlattenCategory } from '../types'
 
 // 品牌缓存：带 TTL（60秒）
@@ -143,6 +144,10 @@ export function useBrandManager(
             showSnackbar('品牌名称不能为空', 'error')
             return
         }
+        if (newBrand.logo && !isValidUrl(newBrand.logo)) {
+            showSnackbar('Logo URL 格式不正确', 'error')
+            return
+        }
         if (!selectedCategoryId) {
             showSnackbar('请先选择一个三级分类', 'error')
             return
@@ -187,6 +192,10 @@ export function useBrandManager(
     const handleConfirmEditBrand = useCallback(async () => {
         if (!editBrand.name.trim()) {
             showSnackbar('品牌名称不能为空', 'error')
+            return
+        }
+        if (editBrand.logo && !isValidUrl(editBrand.logo)) {
+            showSnackbar('Logo URL 格式不正确', 'error')
             return
         }
         if (!editingBrand) return

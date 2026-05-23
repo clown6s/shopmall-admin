@@ -104,14 +104,14 @@ export function EmployeeTable({
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={(canEdit || canDelete) ? 10 : 9} align="center" sx={{ py: 6 }}>
+                                <TableCell colSpan={(canEdit || canDelete) ? 9 : 8} align="center" sx={{ py: 6 }}>
                                     <CircularProgress size={32} sx={{ color: '#667eea' }} />
                                 </TableCell>
                             </TableRow>
                         ) : list.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={(canEdit || canDelete) ? 10 : 9}
+                                    colSpan={(canEdit || canDelete) ? 9 : 8}
                                     align="center"
                                     sx={{ py: 8, color: 'text.secondary' }}
                                 >

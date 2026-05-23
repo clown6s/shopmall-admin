@@ -90,6 +90,11 @@ export default function Login(): JSX.Element {
             const res = await loginApi(mobile, password)
             const loginData = res.data as LoginResp
             if (isEmployeeInfo(loginData?.employeeInfo)) {
+                // 登录成功：存储用户信息到 store，再跳转首页
+                const { employeeId, realName, avatar, phone, role, gender, department, position } = loginData.employeeInfo
+                useUserStore.getState().setUserInfo({
+                    employeeId, realName, avatar, phone, role, gender, department, position,
+                })
                 navigate('/', { replace: true })
             } else {
                 setError('登录响应异常，请联系管理员')

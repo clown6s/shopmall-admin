@@ -133,6 +133,12 @@ export default function CategoryTree({
     containerRef,
     onRefresh,
 }: CategoryTreeProps) {
+    // 计算第一层分类 ID，用于默认展开
+    const defaultExpanded = useMemo(
+        () => items.map(item => item.id),
+        [items]
+    );
+
     // M-5: 使用 useCallback 避免每次渲染重建 slots 回调
     const categoryMap = useMemo(
         () => new Map(computedFlatCategories.map(c => [c.id, c])),
@@ -179,7 +185,7 @@ export default function CategoryTree({
             ) : (
                 <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>
                     <RichTreeView
-                        defaultExpandedItems={['grid']}
+                        defaultExpandedItems={defaultExpanded}
                         items={items}
                         slots={{ item: renderItem }}
                         onItemClick={(_event, itemId) => {

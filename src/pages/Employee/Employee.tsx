@@ -167,7 +167,7 @@ export default function Employee(): JSX.Element {
         }
     }
 
-    const handleResetPassword = async (empId: number, newPassword: string) => {
+    const handleResetPassword = async (empId: string, newPassword: string) => {
         await resetPasswordApi(empId, newPassword)
     }
 

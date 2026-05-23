@@ -53,18 +53,32 @@ async function tryRefreshToken(): Promise<boolean> {
     }
 }
 
-// json-bigint 使用 useNativeBigInt: true 会将大数字解析为 BigInt，
-// 而 React JSX 无法渲染 BigInt（TypeError: Cannot convert object to primitive value）。
-// 递归将 BigInt 转为 string 以确保前端安全使用。
-function bigintToString(data: unknown): unknown {
-    if (typeof data === 'bigint') return data.toString()
+// json-bigint 配置 alwaysParseAsBig: true，将所有整数解析为 BigInt。
+// BigInt 在 bigintToString 中根据 key 名区分处理：
+//   - ID 类字段（含 Id/id、Count、Total、Page、Size）→ 转为 string（int64 兼容）
+//   - 其他数值字段（gender、status 等）→ 转回 number（保持原类型）
+function bigintToString(data: unknown, parentKey?: string): unknown {
+    if (typeof data === 'bigint') {
+        if (isIdKey(parentKey)) return data.toString()
+        return Number(data)
+    }
     if (data === null || typeof data !== 'object') return data
-    if (Array.isArray(data)) return data.map(bigintToString)
+    if (Array.isArray(data)) return data.map((item) => bigintToString(item, parentKey))
     const result: Record<string, unknown> = {}
     for (const key of Object.keys(data)) {
-        result[key] = bigintToString((data as Record<string, unknown>)[key])
+        result[key] = bigintToString((data as Record<string, unknown>)[key], key)
     }
     return result
+}
+
+// 判断 key 是否为 ID 类字段，这类字段对应后端 int64，应转为 string
+// 匹配: xxxId, xxxID, xxxCount (计数类), xxxNum, xxxQuantity, xxxNumber
+// 不匹配: page, pageSize, total (分页元数据保持 number)
+const ID_KEY_PATTERN = /(?:[Ii]d|ID|Count|Num|Quantity|Number)$/i
+function isIdKey(key?: string): boolean {
+    if (!key) return false
+    if (/^(page|pageSize|total)$/i.test(key)) return false
+    return ID_KEY_PATTERN.test(key)
 }
 
 const service: AxiosInstance = axios.create({
@@ -77,7 +91,7 @@ const service: AxiosInstance = axios.create({
         (data) => {
             if (!data) return data
             try {
-                const parsed = JSONBig({ useNativeBigInt: true }).parse(data)
+                const parsed = JSONBig({ useNativeBigInt: true, alwaysParseAsBig: true }).parse(data)
                 return bigintToString(parsed)
             } catch {
                 return data
@@ -120,16 +134,17 @@ service.interceptors.response.use(
 
         // 包装格式 { code, message, data }
         const r = data as ApiResponse<unknown>
-        if (r.code !== undefined && r.data !== undefined) {
-            // 检查后端返回的业务 code，非 200 视为错误
+        if (r.code !== undefined) {
             if (r.code !== 200) {
                 const error = new Error(r.message || '请求失败') as AxiosError<ApiResponse<unknown>>
                 error.response = response
                 error.config = response.config
                 return Promise.reject(error)
             }
-            // 自动提取 data 字段，让 res.data 直接是业务数据
-            return { ...response, data: r.data }
+            // 有 data 字段时自动提取，让 res.data 直接是业务数据
+            if (r.data !== undefined) {
+                return { ...response, data: r.data }
+            }
         }
 
         return response
@@ -186,17 +201,3 @@ function getCSRFToken(): string | null {
 }
 
 export default service
-
-// 获取当前登录用户信息的工具函数
-// 用于在路由守卫中验证登录状态
-export const fetchCurrentUser = async (): Promise<{ data: UserInfo | null; isNetworkError: boolean } | null> => {
-    try {
-        const res = await service.get<UserInfo>('/user/me')
-        return { data: res.data, isNetworkError: false }
-    } catch (err) {
-        const status = (err as AxiosError | undefined)?.response?.status
-        // 401 已经被拦截器自动刷新处理过，这里不会再拿到
-        if (status === 401) return null  // 未认证（refresh 也失败）
-        return { data: null, isNetworkError: true }  // 网络错误
-    }
-}

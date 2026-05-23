@@ -51,9 +51,9 @@ export function RoleTable({ list, loading, canEdit, canDelete, canAssignPermissi
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6 }}><CircularProgress size={32} sx={{ color: '#667eea' }} /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={(canEdit || canDelete || canAssignPermission) ? 6 : 5} align="center" sx={{ py: 6 }}><CircularProgress size={32} sx={{ color: '#667eea' }} /></TableCell></TableRow>
                         ) : !list || list.length === 0 ? (
-                            <TableRow><TableCell colSpan={6} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                            <TableRow><TableCell colSpan={(canEdit || canDelete || canAssignPermission) ? 6 : 5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                                 <Box sx={{ textAlign: 'center' }}><VpnKeyIcon sx={{ fontSize: 48, color: '#cbd5e1', mb: 1 }} /><Typography>暂无角色数据</Typography></Box>
                             </TableCell></TableRow>
                         ) : (

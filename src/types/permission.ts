@@ -19,7 +19,7 @@ export interface CreatePermissionForm {
     permissionName: string
     permissionKey: string
     type: number
-    parentId: number
+    parentId: string
     path: string
     method: string
     sortOrder: number
