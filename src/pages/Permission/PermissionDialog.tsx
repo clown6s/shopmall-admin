@@ -107,7 +107,7 @@ export function PermissionDialog({
                             label="父权限ID"
                             type="number"
                             value={formData.parentId}
-                            onChange={(e) => onFormChange({ ...formData, parentId: Number(e.target.value) || 0 })}
+                            onChange={(e) => onFormChange({ ...formData, parentId: String(e.target.value) || '0' })}
                             helperText="0 表示顶级权限"
                             fullWidth
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}

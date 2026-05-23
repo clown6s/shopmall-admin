@@ -37,7 +37,7 @@ interface EmployeeDialogProps {
     submitting: boolean
     onFormChange: (form: CreateEmployeeForm) => void
     onSubmit: () => void
-    onResetPassword?: (empId: number, newPassword: string) => Promise<void>
+    onResetPassword?: (empId: string, newPassword: string) => Promise<void>
     onClose: () => void
 }
 

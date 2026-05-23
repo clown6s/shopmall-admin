@@ -34,7 +34,7 @@ const DEFAULT_FORM: CreatePermissionForm = {
     permissionName: '',
     permissionKey: '',
     type: 1,
-    parentId: 0,
+    parentId: '0',
     path: '',
     method: '',
     sortOrder: 0,
