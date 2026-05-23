@@ -62,8 +62,11 @@ export default function RequireAuth() {
     if (step === 'authenticated' || step === 'cached') {
         if (location.pathname !== '/') {
             const pathname = location.pathname
-            // menuPaths 为空时，仅允许访问首页（后端仍有权限校验作为最终防线）
-            const allowed = menuPaths.length === 0 || menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+            // menuPaths 为空时，仅允许访问首页（/），其他路径拦截到首页
+            if (menuPaths.length === 0) {
+                return <Navigate to="/" replace />
+            }
+            const allowed = menuPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
             if (!allowed) {
                 return <Navigate to="/" replace />
             }

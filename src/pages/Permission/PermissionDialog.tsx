@@ -92,7 +92,7 @@ export function PermissionDialog({
                             value={formData.method}
                             onChange={(e) => onFormChange({ ...formData, method: e.target.value })}
                             fullWidth
-                            slotProps={{ select: { native: true } }}
+                            slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
                             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
                         >
                             <option value="">不限</option>
