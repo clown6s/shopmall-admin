@@ -99,6 +99,11 @@ function isIdKey(key?: string): boolean {
     return ID_KEY_PATTERN.test(key)
 }
 
+function isCSRFExemptURL(url?: string): boolean {
+    const path = url?.replace(/^\/api/, '').replace(/^\//, '') ?? ''
+    return path === 'employee/login' || path === 'csrf/token'
+}
+
 const service: AxiosInstance = axios.create({
     baseURL: '/api',
     timeout: 8000,
@@ -121,10 +126,10 @@ const service: AxiosInstance = axios.create({
 // 请求拦截器：不再手动附加 Authorization header
 // httpOnly cookie 由浏览器自动携带
 // 同时添加 CSRF token（从 cookie 读取 xsrf-token）
-service.interceptors.request.use((config) => {
+service.interceptors.request.use(async (config) => {
     // 仅对 state-changing 请求添加 CSRF token
-    if (['post', 'put', 'delete', 'patch'].includes(config.method?.toLowerCase() || '')) {
-        const csrfToken = getCSRFToken()
+    if (['post', 'put', 'delete', 'patch'].includes(config.method?.toLowerCase() || '') && !isCSRFExemptURL(config.url)) {
+        const csrfToken = await ensureCSRFToken()
         if (csrfToken) {
             config.headers['X-XSRF-TOKEN'] = csrfToken
         } else {
