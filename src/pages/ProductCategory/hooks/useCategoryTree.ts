@@ -95,8 +95,8 @@ export function useCategoryTree(
 
     const computedFlatCategories = useMemo(() => flattenCategories(items), [items])
 
-    const refreshTree = useCallback(async () => {
-        const res = await getProductCategoryTreeApi()
+    const refreshTree = useCallback(async (bustCache = false) => {
+        const res = await getProductCategoryTreeApi(bustCache)
         setItems(toTreeViewItems(res.data || []))
     }, [])
 
@@ -151,7 +151,7 @@ export function useCategoryTree(
                 showStatus: toShowStatus(newCategory.showStatus),
                 sort: newCategory.sort,
             })
-            await refreshTree()
+            await refreshTree(true)
             showSnackbar('添加成功', 'success')
             handleCloseAddDialog()
         } catch (err) {
@@ -194,7 +194,7 @@ export function useCategoryTree(
                 showStatus: toShowStatus(editCategory.showStatus),
                 sort: editCategory.sort,
             })
-            await refreshTree()
+            await refreshTree(true)
             showSnackbar('修改成功', 'success')
             setEditDialogOpen(false)
         } catch (err) {
@@ -212,7 +212,7 @@ export function useCategoryTree(
         if (!deletingId) return
         try {
             await deleteCategoryApi(deletingId)
-            await refreshTree()
+            await refreshTree(true)
             showSnackbar('删除成功', 'success')
             onSuccess?.()
         } catch (err) {

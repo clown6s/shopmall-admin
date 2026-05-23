@@ -3,8 +3,9 @@ import request from './request'
 import type {CategoryTreeNode, Brand,CategoryParams,UpdateBrandParams,AddBrandParams,UpdateCategoryParams} from '../types/product'
 
 // 获取商品三级分类树（后端返回纯数组）
-export const getProductCategoryTreeApi = () =>
-    request.get<CategoryTreeNode[]>('/product/category')
+// bustCache: 增删改后传 true，避免浏览器 304 缓存
+export const getProductCategoryTreeApi = (bustCache = false) =>
+    request.get<CategoryTreeNode[]>('/product/category', { params: bustCache ? { _t: Date.now() } : {} })
 
 // 获取指定分类关联的品牌列表
 export const getBrandsByCategoryApi = (catId: string) =>
