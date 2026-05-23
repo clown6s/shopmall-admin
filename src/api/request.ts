@@ -40,7 +40,9 @@ function onRefreshFailure(err: unknown) {
  */
 async function tryRefreshToken(): Promise<boolean> {
     try {
+        const csrfToken = await ensureCSRFToken()
         const res = await axios.post('/api/auth/refresh', null, {
+            headers: csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : undefined,
             withCredentials: true,
             timeout: 5000,
         })
@@ -51,6 +53,22 @@ async function tryRefreshToken(): Promise<boolean> {
         }
         return false
     }
+}
+
+async function ensureCSRFToken(): Promise<string | null> {
+    const existing = getCSRFToken()
+    if (existing) return existing
+
+    try {
+        await axios.get('/api/csrf/token', {
+            withCredentials: true,
+            timeout: 5000,
+        })
+    } catch {
+        return null
+    }
+
+    return getCSRFToken()
 }
 
 // json-bigint 配置 alwaysParseAsBig: true，将所有整数解析为 BigInt。
