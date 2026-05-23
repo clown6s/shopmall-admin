@@ -83,7 +83,7 @@ export default function Employee(): JSX.Element {
         try {
             setDeleting(true)
             setDeleteError('')
-            await deleteEmployeeApi(deleteTarget.id)
+            await deleteEmployeeApi(deleteTarget.employeeId)
             setDeleteTarget(null)
             await fetchData()
         } catch (err: unknown) {
@@ -174,7 +174,7 @@ export default function Employee(): JSX.Element {
         if (!currentEmployee || !validateForm()) return
         try {
             setSubmitting(true)
-            await updateEmployeeApi(currentEmployee.id, form)
+            await updateEmployeeApi(currentEmployee.employeeId, form)
             setOpenEdit(false)
             setCurrentEmployee(null)
             await fetchData()

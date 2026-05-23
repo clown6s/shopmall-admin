@@ -1,7 +1,7 @@
 // src/types/employee.ts
 
 export interface EmployeeInfo {
-    id: number
+    employeeId: number
     realName: string
     phone: string
     avatar: string
@@ -9,16 +9,18 @@ export interface EmployeeInfo {
     department: string
     position: string
     role: string
+    workStatus: number
+    canLogin: number
+    createTime: string
 }
 
-// 注意：后端通过 httpOnly cookie 设置认证，响应体中的 token 字段是冗余的
+// 后端通过 httpOnly cookie 设置认证，响应体不含 token
 export interface LoginResp {
-    token: string
     employeeInfo: EmployeeInfo
 }
 
 export interface IEmployee {
-    id: number
+    employeeId: number
     realName: string
     avatar: string
     gender: number

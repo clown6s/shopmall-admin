@@ -28,7 +28,7 @@ function isEmployeeInfo(data: unknown): data is EmployeeInfo {
     if (!data || typeof data !== 'object') return false
     const info = data as Record<string, unknown>
     return (
-        typeof info.id === 'number' &&
+        typeof info.employeeId === 'number' &&
         typeof info.realName === 'string' &&
         typeof info.phone === 'string'
     )

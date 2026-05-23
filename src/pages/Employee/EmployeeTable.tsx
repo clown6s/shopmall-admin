@@ -129,7 +129,7 @@ export function EmployeeTable({
                                     emp.department
                                 return (
                                     <TableRow
-                                        key={emp.id}
+                                        key={emp.employeeId}
                                         hover
                                         sx={{
                                             '&:hover': { background: '#f8fafc' },
@@ -162,7 +162,7 @@ export function EmployeeTable({
                                                         {emp.realName}
                                                     </Typography>
                                                     <Typography variant="caption" color="text.secondary">
-                                                        ID: {emp.id}
+                                                        ID: {emp.employeeId}
                                                     </Typography>
                                                 </Box>
                                             </Box>

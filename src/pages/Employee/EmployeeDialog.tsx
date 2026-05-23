@@ -95,7 +95,7 @@ export function EmployeeDialog({
             setResetting(true)
             setResetError('')
             setResetSuccess(false)
-            await onResetPassword(editingEmployee.id, newPwd)
+            await onResetPassword(editingEmployee.employeeId, newPwd)
             setResetSuccess(true)
             setNewPwd('')
         } catch (err: unknown) {

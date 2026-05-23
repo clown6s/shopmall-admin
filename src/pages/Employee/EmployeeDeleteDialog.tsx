@@ -18,7 +18,7 @@ export function EmployeeDeleteDialog({
     onClose,
 }: EmployeeDeleteDialogProps) {
     const displayName = target
-        ? `${target.realName}（ID: ${target.id}）`
+        ? `${target.realName}（ID: ${target.employeeId}）`
         : ''
 
     return (

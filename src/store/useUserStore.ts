@@ -2,7 +2,7 @@
 import { create } from "zustand";
 
 export interface UserInfo {
-    id: number
+    employeeId: number
     realName: string
     avatar: string
     phone: string
@@ -64,7 +64,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
             const userInfo = userRes.data
             const menusData = menusRes.data
-            if (userInfo && typeof userInfo.id === 'number') {
+            if (userInfo && typeof userInfo.employeeId === 'number') {
                 const perms = menusData?.permissions || []
                 set({
                     userInfo,
