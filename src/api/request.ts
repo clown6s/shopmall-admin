@@ -5,7 +5,7 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosResponse, AxiosError } from 'axios'
 import type { ApiResponse } from '../types/api'
-import type { UserInfo } from '../store/useUserStore'
+
 import JSONBig from 'json-bigint'
 
 // 401 未授权回调，由路由守卫设置（刷新 token 也失败时才触发）
