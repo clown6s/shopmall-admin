@@ -28,7 +28,7 @@ function isEmployeeInfo(data: unknown): data is EmployeeInfo {
     if (!data || typeof data !== 'object') return false
     const info = data as Record<string, unknown>
     return (
-        typeof info.employeeId === 'number' &&
+        typeof info.employeeId === 'string' &&
         typeof info.realName === 'string' &&
         typeof info.phone === 'string'
     )
@@ -245,7 +245,7 @@ export default function Login(): JSX.Element {
                         value={mobile}
                         onChange={(e) => setPhone(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        autoComplete="off"
+                        autoComplete="tel"
                         slotProps={{
                             htmlInput: { maxLength: 11 },
                             input: {

@@ -16,7 +16,7 @@ import SearchIcon from '@mui/icons-material/Search'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import type { IEmployee, CreateEmployeeForm } from '../../types/employee'
 import useUserStore from '../../store/useUserStore'
-import { createEmployeeApi, updateEmployeeApi, deleteEmployeeApi, resetPasswordApi } from '../../api/employee'
+import { createEmployeeApi, updateEmployeeApi, resetPasswordApi } from '../../api/employee'
 import { getAllDepartmentsApi } from '../../api/department'
 import { getRolesApi } from '../../api/role'
 import { PASSWORD_HINT, isValidPassword, isValidPhone, isValidEmail, isValidUrl } from '../../utils/validators'
@@ -27,7 +27,6 @@ import { useEmployeeData } from './useEmployeeData'
 import { PRIMARY_BUTTON_SX } from '../../utils/theme'
 import { EmployeeTable } from './EmployeeTable'
 import { EmployeeDialog } from './EmployeeDialog'
-import { EmployeeDeleteDialog } from './EmployeeDeleteDialog'
 
 const DEFAULT_FORM: CreateEmployeeForm = {
     realName: '', phone: '', email: '', age: undefined, gender: 1,
@@ -64,33 +63,16 @@ export default function Employee(): JSX.Element {
     const [formError, setFormError] = useState('')
     const [submitting, setSubmitting] = useState(false)
 
-    const [deleteTarget, setDeleteTarget] = useState<IEmployee | null>(null)
-    const [deleting, setDeleting] = useState(false)
     const [departments, setDepartments] = useState<IDepartment[]>([])
     const [roles, setRoles] = useState<IRole[]>([])
     const hasPermission = useUserStore((s) => s.hasPermission)
 
     // M-1: 已移除重复的 useEffect — useEmployeeData hook 内部已有自动 fetchData
 
-    const [deleteError, setDeleteError] = useState('')
+    // 删除功能已移除：后端未实现员工删除接口
 
     const handleReset = () => {
         resetFilters()
-    }
-
-    const handleDelete = async () => {
-        if (!deleteTarget) return
-        try {
-            setDeleting(true)
-            setDeleteError('')
-            await deleteEmployeeApi(deleteTarget.employeeId)
-            setDeleteTarget(null)
-            await fetchData()
-        } catch (err: unknown) {
-            setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
-        } finally {
-            setDeleting(false)
-        }
     }
 
     const fetchDepartments = useCallback(async () => {
@@ -208,7 +190,7 @@ export default function Employee(): JSX.Element {
                         管理系统员工信息和在职状态
                     </Typography>
                 </Box>
-                {hasPermission('system:employee:create') && (
+                {hasPermission('system:employee:add') && (
                     <Button variant="contained" startIcon={<AddIcon />}
                         onClick={() => handleOpenDialog()} sx={PRIMARY_BUTTON_SX}>
                         新建员工
@@ -258,24 +240,18 @@ export default function Employee(): JSX.Element {
                 </Alert>
             )}
 
-            {deleteError && (
-                <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setDeleteError('')}>
-                    {deleteError}
-                </Alert>
-            )}
-
             <EmployeeTable
                 list={list}
                 loading={loading}
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                canEdit={hasPermission('system:employee:update')} canDelete={hasPermission('system:employee:delete')}
+                canEdit={hasPermission('system:employee:update')} canDelete={false}
                 departments={departments}
                 onPageChange={setPage}
                 onPageSizeChange={handlePageSizeChange}
                 onEdit={(emp) => handleOpenDialog(emp)}
-                onDelete={(emp) => setDeleteTarget(emp)}
+                onDelete={() => {}}
             />
 
             <EmployeeDialog
@@ -290,14 +266,6 @@ export default function Employee(): JSX.Element {
                 onSubmit={isEditMode ? handleEdit : handleCreate}
                 onResetPassword={handleResetPassword}
                 onClose={handleDialogClose}
-            />
-
-            <EmployeeDeleteDialog
-                open={Boolean(deleteTarget)}
-                target={deleteTarget}
-                deleting={deleting}
-                onConfirm={handleDelete}
-                onClose={() => setDeleteTarget(null)}
             />
         </Box>
     )

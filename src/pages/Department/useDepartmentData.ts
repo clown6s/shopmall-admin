@@ -49,13 +49,13 @@ export function useDepartmentData(): UseDepartmentDataReturn {
         }
     }, [page, pageSize, search])
 
-    // 搜索变化时重置页码并重新获取数据
+    // 搜索变化时重置页码（fetchData 依赖 page，会自动触发重新获取）
     useEffect(() => {
         setPage(1)
-        // no async cleanup needed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search])
 
-    // 页码、页大小或搜索条件变化时获取数据
+    // 页码、页大小变化时获取数据
     useEffect(() => {
         fetchData()
         // requestIdRef handles race condition cancellation

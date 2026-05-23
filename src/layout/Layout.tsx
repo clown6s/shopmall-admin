@@ -81,8 +81,8 @@ export default function Layout(): JSX.Element {
 
     const drawerWidth = collapsed ? DRAWER_COLLAPSED_WIDTH : DRAWER_WIDTH
 
-    const handleLogout = () => {
-        logout()
+    const handleLogout = async () => {
+        await logout()
     }
 
     const isSystemMenuActive = filteredSystemMenuItems.some((item) =>
@@ -290,6 +290,7 @@ export default function Layout(): JSX.Element {
                                 onClick={() => !collapsed && setProductMenuOpen(!productMenuOpen)}
                                 selected={isProductMenuActive}
                                 aria-expanded={productMenuOpen || isProductMenuActive}
+                                aria-label="商品管理"
                                 sx={{
                                     borderRadius: '10px',
                                     mb: 0.5,
@@ -437,6 +438,7 @@ export default function Layout(): JSX.Element {
                                 onClick={() => !collapsed && setSystemMenuOpen(!systemMenuOpen)}
                                 selected={isSystemMenuActive}
                                 aria-expanded={systemMenuOpen || isSystemMenuActive}
+                                aria-label="系统管理"
                                 sx={{
                                     borderRadius: '10px',
                                     mb: 0.5, py: 1.1,
@@ -585,7 +587,7 @@ export default function Layout(): JSX.Element {
                                     {userInfo?.realName ?? '未知用户'}
                                 </Typography>
                                 <Typography variant="caption" sx={{ color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', fontSize: '0.72rem' }}>
-                                    {userInfo?.phone ? userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : ''}
+                                    {userInfo?.phone ? (userInfo.phone.length === 11 ? userInfo.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : userInfo.phone) : ''}
                                 </Typography>
                             </Box>
                         </Box>

@@ -199,7 +199,9 @@ export function useBrandManager(
                 firstLetter: editBrand.firstLetter,
                 sort: editBrand.sort,
             })
-            invalidateBrandCache(selectedCategoryId!)
+            if (selectedCategoryId) {
+                invalidateBrandCache(selectedCategoryId)
+            }
             showSnackbar('更新成功', 'success')
             handleCloseEditBrandDialog()
         } catch (err) {
@@ -222,7 +224,9 @@ export function useBrandManager(
         if (!deletingBrand) return
         try {
             await deleteBrandApi(deletingBrand.brandId)
-            invalidateBrandCache(selectedCategoryId!)
+            if (selectedCategoryId) {
+                invalidateBrandCache(selectedCategoryId)
+            }
             showSnackbar('删除成功', 'success')
             handleCloseDeleteBrandDialog()
         } catch (err) {

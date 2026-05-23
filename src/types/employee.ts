@@ -1,7 +1,7 @@
 // src/types/employee.ts
 
 export interface EmployeeInfo {
-    employeeId: number
+    employeeId: string  // 后端 BIGINT，通过 json-bigint 转为 string
     realName: string
     phone: string
     avatar: string
@@ -20,7 +20,7 @@ export interface LoginResp {
 }
 
 export interface IEmployee {
-    employeeId: number
+    employeeId: string
     realName: string
     avatar: string
     gender: number

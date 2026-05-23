@@ -54,7 +54,7 @@ export default function PaginationBar({
                 </Typography>
             </Box>
             <Pagination
-                count={Math.ceil(total / pageSize)}
+                count={Math.max(0, Math.ceil(total / pageSize))}
                 page={page}
                 onChange={(_, v) => onPageChange(v)}
                 shape="rounded"

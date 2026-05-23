@@ -86,7 +86,7 @@ export default function Role(): JSX.Element {
             setDeleteError('')
             await deleteRoleApi(deleteTarget.id)
             setDeleteTarget(null)
-            fetchData()
+            await fetchData()
         } catch (err: unknown) {
             setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
@@ -124,6 +124,7 @@ export default function Role(): JSX.Element {
                 onDelete={setDeleteTarget}
                 canEdit={hasPermission('system:role:update')}
                 canDelete={hasPermission('system:role:delete')}
+                canAssignPermission={hasPermission('system:role:assign')}
             />
 
             <RoleDialog

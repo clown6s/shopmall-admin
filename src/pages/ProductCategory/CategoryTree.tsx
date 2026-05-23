@@ -3,6 +3,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
 import { styled, alpha } from '@mui/material/styles';
 import { TreeItem, treeItemClasses } from '@mui/x-tree-view/TreeItem';
 import type { TreeItemProps } from '@mui/x-tree-view/TreeItem';
@@ -28,6 +29,7 @@ interface CategoryTreeProps {
     loading: boolean;
     error: string | null;
     containerRef: React.RefObject<HTMLDivElement | null>;
+    onRefresh?: () => void;
 }
 
 const CustomTreeItemRoot = styled(TreeItem)(({ theme }) => ({
@@ -129,6 +131,7 @@ export default function CategoryTree({
     loading,
     error,
     containerRef,
+    onRefresh,
 }: CategoryTreeProps) {
     // M-5: 使用 useCallback 避免每次渲染重建 slots 回调
     const categoryMap = useMemo(
@@ -165,8 +168,13 @@ export default function CategoryTree({
                     <CircularProgress />
                 </Box>
             ) : error ? (
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography color="error">{error}</Typography>
+                    {onRefresh && (
+                        <Button size="small" variant="outlined" onClick={onRefresh} sx={{ mt: 1 }}>
+                            重试
+                        </Button>
+                    )}
                 </Box>
             ) : (
                 <Box ref={containerRef} sx={{ flex: 1, overflow: 'auto', border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1 }}>

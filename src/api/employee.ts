@@ -23,18 +23,18 @@ export const getEmployeesApi = (params: {
         { params }
     )
 
-export const getEmployeeApi = (id: number) =>
+export const getEmployeeApi = (id: string) =>
     request.get<IEmployee>(`/employee/${id}`)
 
 export const createEmployeeApi = (data: CreateEmployeeForm) =>
     request.post<IEmployee>('/employee', data)
 
-export const updateEmployeeApi = (id: number, data: CreateEmployeeForm) =>
+export const updateEmployeeApi = (id: string, data: CreateEmployeeForm) =>
     request.put<IEmployee>(`/employee/${id}`, data)
 
 /** @deprecated 后端暂未实现员工删除接口，请勿使用 */
-export const deleteEmployeeApi = (id: number) =>
+export const deleteEmployeeApi = (id: string) =>
     request.delete<null>(`/employee/${id}`)
 
-export const resetPasswordApi = (id: number, newPassword: string) =>
+export const resetPasswordApi = (id: string, newPassword: string) =>
     request.put<null>(`/employee/${id}/password`, { newPassword })

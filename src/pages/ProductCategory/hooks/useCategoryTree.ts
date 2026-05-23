@@ -71,6 +71,8 @@ export interface UseCategoryTreeReturn {
     handleDelete: (id: string) => void
     handleConfirmDelete: (onSuccess?: () => void) => Promise<void>
     handleCancelDelete: () => void
+    refreshTree: () => Promise<void>
+    handleRefresh: () => Promise<void>
 }
 
 export function useCategoryTree(
@@ -229,6 +231,19 @@ export function useCategoryTree(
         setDeletingId(null)
     }, [])
 
+    const handleRefresh = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            await refreshTree(true)
+        } catch (err) {
+            if (import.meta.env.DEV) console.error('刷新分类失败:', err)
+            setError('加载分类数据失败，请重试')
+        } finally {
+            setLoading(false)
+        }
+    }, [refreshTree])
+
     return {
         containerRef, items, loading, error, computedFlatCategories,
         addDialogOpen, setAddDialogOpen, editDialogOpen, setEditDialogOpen,
@@ -238,5 +253,6 @@ export function useCategoryTree(
         handleOpenAddDialog, handleAddChild, handleCloseAddDialog, handleConfirmAdd,
         handleEdit, handleCloseEditDialog, handleConfirmEdit,
         handleDelete, handleConfirmDelete, handleCancelDelete,
+        refreshTree, handleRefresh,
     }
 }

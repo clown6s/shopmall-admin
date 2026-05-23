@@ -12,14 +12,14 @@ export const getDepartmentsApi = (params: {
 export const getAllDepartmentsApi = () =>
     request.get<IDepartment[]>('/department/all')
 
-export const getDepartmentApi = (id: number) =>
+export const getDepartmentApi = (id: string) =>
     request.get<IDepartment>(`/department/${id}`)
 
 export const createDepartmentApi = (data: CreateDepartmentForm) =>
-    request.post<{ deptId: number }>('/department', data)
+    request.post<{ deptId: string }>('/department', data)
 
-export const updateDepartmentApi = (id: number, data: CreateDepartmentForm) =>
+export const updateDepartmentApi = (id: string, data: CreateDepartmentForm) =>
     request.put<IDepartment>(`/department/${id}`, data)
 
-export const deleteDepartmentApi = (id: number) =>
+export const deleteDepartmentApi = (id: string) =>
     request.delete<null>(`/department/${id}`)

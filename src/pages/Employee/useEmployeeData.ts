@@ -19,10 +19,6 @@ export interface UseEmployeeDataReturn {
     setPage: (page: number) => void
     setPageSize: (pageSize: number) => void
     setFilters: (filters: EmployeeFilters) => void
-    setList: (list: IEmployee[]) => void
-    setTotal: (total: number) => void
-    setLoading: (loading: boolean) => void
-    setError: (error: string) => void
     fetchData: () => Promise<void>
     handlePageSizeChange: (val: number) => void
     handleReset: () => void
@@ -77,8 +73,8 @@ export function useEmployeeData(): UseEmployeeDataReturn {
     }, [fetchData])
 
     const handlePageSizeChange = (val: number) => {
-        setPageSize(val)
         setPage(1)
+        setPageSize(val)
     }
 
     const handleReset = () => {
@@ -97,10 +93,6 @@ export function useEmployeeData(): UseEmployeeDataReturn {
         setPage,
         setPageSize,
         setFilters,
-        setList,
-        setTotal,
-        setLoading,
-        setError,
         fetchData,
         handlePageSizeChange,
         handleReset,

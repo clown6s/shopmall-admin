@@ -5,14 +5,14 @@ import type { IPermission, CreatePermissionForm } from '../types/permission'
 export const getPermissionsApi = () =>
     request.get<IPermission[]>('/admin/permission')
 
-export const getPermissionApi = (id: number) =>
+export const getPermissionApi = (id: string) =>
     request.get<IPermission>(`/admin/permission/${id}`)
 
 export const createPermissionApi = (data: CreatePermissionForm) =>
     request.post<IPermission>('/admin/permission', data)
 
-export const updatePermissionApi = (id: number, data: CreatePermissionForm) =>
+export const updatePermissionApi = (id: string, data: CreatePermissionForm) =>
     request.put<null>(`/admin/permission/${id}`, data)
 
-export const deletePermissionApi = (id: number) =>
+export const deletePermissionApi = (id: string) =>
     request.delete<null>(`/admin/permission/${id}`)

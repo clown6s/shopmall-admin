@@ -55,7 +55,7 @@ export default function RequireAuth() {
         }
         validate()
         return () => { cancelled = true }
-    }, [fetchUserInfo, navigate])
+    }, [fetchUserInfo])
 
     // 验证完成 → 已登录
     // pathname === '/'（仪表盘首页）默认允许访问，不受 menuPaths 限制
@@ -89,12 +89,16 @@ export default function RequireAuth() {
             <Typography sx={{ color: '#89b4fa', fontWeight: 700, fontSize: 18, mb: 2 }}>
                 ShopMall Admin
             </Typography>
-            <Typography sx={{ color: '#94a3b8', mb: 1 }}>
-                Step: <span style={{ color: '#89b4fa' }}>{step}</span>
-            </Typography>
-            <Typography sx={{ color: '#64748b', mb: 3, fontSize: 13 }}>
-                {result}
-            </Typography>
+            {import.meta.env.DEV && (
+            <>
+                <Typography sx={{ color: '#94a3b8', mb: 1 }}>
+                    Step: <span style={{ color: '#89b4fa' }}>{step}</span>
+                </Typography>
+                <Typography sx={{ color: '#64748b', mb: 3, fontSize: 13 }}>
+                    {result}
+                </Typography>
+            </>
+            )}
             {step === 'error' && (
                 <Button
                     variant="contained"

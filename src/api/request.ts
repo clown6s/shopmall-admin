@@ -46,7 +46,9 @@ async function tryRefreshToken(): Promise<boolean> {
         })
         return res.status === 200
     } catch (err) {
-        console.error('[API] tryRefreshToken 失败:', (err as AxiosError)?.response?.status, err instanceof Error ? err.message : String(err))
+        if (import.meta.env.DEV) {
+            console.error('[API] tryRefreshToken 失败:', (err as AxiosError)?.response?.status, err instanceof Error ? err.message : String(err))
+        }
         return false
     }
 }

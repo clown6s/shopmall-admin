@@ -1,11 +1,11 @@
 // src/types/permission.ts
 
 export interface IPermission {
-    id: number
+    id: string  // 后端 BIGINT
     permissionName: string
     permissionKey: string
     type: number       // 1=菜单 2=按钮 3=API
-    parentId: number
+    parentId: string   // 后端 BIGINT
     path: string
     method: string
     sortOrder: number

@@ -2,7 +2,7 @@
 import { create } from "zustand";
 
 export interface UserInfo {
-    employeeId: number
+    employeeId: string  // 后端 BIGINT，通过 json-bigint 转为 string
     realName: string
     avatar: string
     phone: string
@@ -64,7 +64,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
             const userInfo = userRes.data
             const menusData = menusRes.data
-            if (userInfo && typeof userInfo.employeeId === 'number') {
+            if (userInfo && typeof userInfo.employeeId === 'string') {
                 const perms = menusData?.permissions || []
                 set({
                     userInfo,
@@ -74,11 +74,15 @@ const useUserStore = create<UserState>((set, get) => ({
                 })
                 return true
             }
-            console.warn('[UserStore] 用户信息无效:', userInfo)
+            if (import.meta.env.DEV) {
+                console.warn('[UserStore] 用户信息无效:', userInfo)
+            }
             set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() })
             return false
         } catch (err) {
-            console.error('[UserStore] fetchUserInfo 失败:', err)
+            if (import.meta.env.DEV) {
+                console.error('[UserStore] fetchUserInfo 失败:', err)
+            }
             set({ userInfo: null, menuPaths: [], permissions: [], permissionSet: new Set<string>() })
             return false
         }

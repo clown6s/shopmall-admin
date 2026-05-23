@@ -23,7 +23,7 @@ export interface Brand {
 
 // 后端分类树节点（与实际返回数据匹配）
 export interface CategoryTreeNode {
-    catId: number
+    catId: string
     name: string
     sort?: number
     showStatus?: number
@@ -57,7 +57,7 @@ function normalizeCategoryNodes(nodes: unknown): CategoryTreeNode[] {
 
 export function toTreeViewItems(nodes: unknown): CategoryTreeItem[] {
     return normalizeCategoryNodes(nodes).map((node) => ({
-        id: String(node.catId),
+        id: node.catId,
         label: node.name,
         sort: node.sort,
         showStatus: node.showStatus,

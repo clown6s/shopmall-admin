@@ -51,6 +51,7 @@ export default function ProductCategory() {
         handleOpenAddBrandDialog, handleCloseAddBrandDialog, handleConfirmAddBrand,
         handleOpenEditBrandDialog, handleCloseEditBrandDialog, handleConfirmEditBrand,
         handleOpenDeleteBrandDialog, handleCloseDeleteBrandDialog, handleConfirmDeleteBrand,
+        handleRefresh,
         handleSnackbarClose,
     } = useCategoryData();
 
@@ -163,6 +164,7 @@ export default function ProductCategory() {
                     loading={loading}
                     error={error}
                     containerRef={containerRef}
+                    onRefresh={handleRefresh}
                 />
 
                 {/* 右侧：品牌列表 */}

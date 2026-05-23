@@ -1,7 +1,7 @@
 // src/types/department.ts
 
 export interface IDepartment {
-    deptId: number
+    deptId: string  // 后端 BIGINT
     deptName: string
     deptSort: number
     status: number

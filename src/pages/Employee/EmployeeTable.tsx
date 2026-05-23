@@ -175,7 +175,7 @@ export function EmployeeTable({
                                             </Typography>
                                         </TableCell>
                                         <TableCell align="center" sx={cellSx}>
-                                            <Typography variant="body2">{emp.phone}</Typography>
+                                            <Typography variant="body2">{emp.phone?.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')}</Typography>
                                             <Typography variant="caption" color="text.secondary">
                                                 {emp.email || '—'}
                                             </Typography>

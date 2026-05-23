@@ -112,7 +112,7 @@ export default function Permission(): JSX.Element {
             setDeleteError('')
             await deletePermissionApi(deleteTarget.id)
             setDeleteTarget(null)
-            fetchData()
+            await fetchData()
         } catch (err: unknown) {
             setDeleteError(getApiErrorMsg(err, '删除失败，请重试'))
         } finally {
@@ -191,8 +191,8 @@ export default function Permission(): JSX.Element {
                                             <Chip label={perm.status === 1 ? '启用' : '禁用'} color={perm.status === 1 ? 'success' : 'default'} size="small" sx={{ height: 24, fontWeight: 500, '& .MuiChip-label': { px: 1 } }} />
                                         </TableCell>
                                         <TableCell align="center" sx={{ py: 1.5, pr: 3 }}>
-                                            {hasPermission('system:permission:update') && <Tooltip title="编辑"><IconButton size="small" onClick={() => handleOpenEdit(perm)} sx={{ color: '#64748b', '&:hover': { background: 'rgba(100, 116, 139, 0.1)' } }}><EditIcon fontSize="small" /></IconButton></Tooltip>}
-                                            {hasPermission('system:permission:delete') && <Tooltip title="删除"><IconButton size="small" onClick={() => setDeleteTarget(perm)} sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}><DeleteIcon fontSize="small" /></IconButton></Tooltip>}
+                                            {hasPermission('system:permission:update') && <Tooltip title="编辑"><IconButton aria-label="编辑" size="small" onClick={() => handleOpenEdit(perm)} sx={{ color: '#64748b', '&:hover': { background: 'rgba(100, 116, 139, 0.1)' } }}><EditIcon fontSize="small" /></IconButton></Tooltip>}
+                                            {hasPermission('system:permission:delete') && <Tooltip title="删除"><IconButton aria-label="删除" size="small" onClick={() => setDeleteTarget(perm)} sx={{ color: '#ef4444', '&:hover': { background: 'rgba(239, 68, 68, 0.1)' } }}><DeleteIcon fontSize="small" /></IconButton></Tooltip>}
                                         </TableCell>
                                     </TableRow>
                                 ))

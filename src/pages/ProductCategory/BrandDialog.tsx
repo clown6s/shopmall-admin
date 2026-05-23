@@ -128,7 +128,7 @@ export default function BrandDialog({
                     placeholder="输入Logo URL"
                     slotProps={{
                         input: {
-                            startAdornment: formData.logo && isValidUrl(formData.logo) ? (
+                            startAdornment: formData.logo && isValidUrl(formData.logo) && formData.logo.startsWith('https://') ? (
                                 <Box component="span" sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
                                     <img src={formData.logo} alt="logo" height={24} style={{ borderRadius: 4 }} crossOrigin="anonymous" referrerPolicy="no-referrer" />
                                 </Box>

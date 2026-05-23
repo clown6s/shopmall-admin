@@ -20,7 +20,7 @@ import { DIALOG_PAPER_SLOT_PROPS } from '../../utils/dialog'
 
 export interface RolePermissionDialogProps {
     open: boolean
-    roleId: number | null
+    roleId: string | null
     roleName: string
     onClose: () => void
     onAssigned: () => void
@@ -28,7 +28,7 @@ export interface RolePermissionDialogProps {
 
 export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssigned }: RolePermissionDialogProps): JSX.Element {
     const [permissions, setPermissions] = useState<IPermission[]>([])
-    const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set())
+    const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
     const [loading, setLoading] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState('')
@@ -46,7 +46,7 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
                 ])
                 if (!cancelled) {
                     setPermissions(permsRes.data as IPermission[])
-                    setCheckedIds(new Set(idsRes.data as number[]))
+                    setCheckedIds(new Set(idsRes.data as string[]))
                 }
             } catch {
                 if (!cancelled) setError('加载权限数据失败')
@@ -58,7 +58,7 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
         return () => { cancelled = true }
     }, [open, roleId])
 
-    const handleToggle = (id: number) => {
+    const handleToggle = (id: string) => {
         setCheckedIds((prev) => {
             const next = new Set(prev)
             if (next.has(id)) next.delete(id)
@@ -91,10 +91,10 @@ export function RolePermissionDialog({ open, roleId, roleName, onClose, onAssign
     }
 
     // Build tree structure for rendering
-    const topLevel = permissions.filter((p) => p.parentId === 0)
-    const childrenMap = new Map<number, IPermission[]>()
+    const topLevel = permissions.filter((p) => p.parentId === '0')
+    const childrenMap = new Map<string, IPermission[]>()
     permissions.forEach((p) => {
-        if (p.parentId !== 0) {
+        if (p.parentId !== '0') {
             const arr = childrenMap.get(p.parentId) || []
             arr.push(p)
             childrenMap.set(p.parentId, arr)

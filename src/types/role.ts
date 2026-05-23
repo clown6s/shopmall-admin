@@ -1,7 +1,7 @@
 // src/types/role.ts
 
 export interface IRole {
-    id: number
+    id: string  // 后端 BIGINT
     roleName: string
     roleKey: string
     description: string
