@@ -135,6 +135,9 @@ npm run build
 # 产物在 dist/ 目录
 ```
 docker-compose up -d --build web
+
+docker-compose build --no-cache web
+docker-compose up -d web
 ---
 
 ## License
